@@ -1,5 +1,12 @@
 # Changelog - Norden UI - Black
 
+## 1.0.2 - 2026-09-22
+
+* The Automatic DIP Patcher descriptor shipped `"alreadyPatched": true`, the flag that tells the patcher a patch is
+  already applied, so it skipped ours and the race menu stayed vanilla (the owner, at a new game's race menu). It
+  ships `false` now, as that patcher's own documentation specifies. Norden UI's own RaceMenu descriptor carries
+  `true` as well, so his patch never applies through the automatic patcher either - worth telling Nithog.
+
 ## 1.0.1 - 2026-09-22
 
 * RaceMenu's race menu and bottom bar are shipped as a Dynamic Interface Patcher patch (xdelta deltas in

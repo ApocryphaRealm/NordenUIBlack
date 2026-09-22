@@ -74,7 +74,10 @@ DIP_OUTPUTS = [
 ]
 DIP_PATCH_DIR = "Norden Black RaceMenu DIP"                                   # shipped, with its .bin deltas
 DIP_DESCRIPTOR = os.path.join("SKSE", "Plugins", "AutomaticPatcher", "DIP", "Norden-Black-RaceMenu.json")
-DIP_DESCRIPTOR_TEXT = '[\n   {\n      "patchPath": "Data\\\\' + DIP_PATCH_DIR + '",\n      "alreadyPatched": true\n   }\n]\n'
+# "alreadyPatched" is the Automatic DIP Patcher's "skip this one" flag; its documentation writes new patches with
+# FALSE. Norden UI's own descriptor says true - which is why its RaceMenu patch never applies through that patcher -
+# and 1.0.1 inherited the value, so ours was skipped too and the race menu stayed vanilla (the owner, 2026-09-22).
+DIP_DESCRIPTOR_TEXT = '[\n   {\n      "patchPath": "Data\\\\' + DIP_PATCH_DIR + '",\n      "alreadyPatched": false\n   }\n]\n'
 NEVER_SHIP_DIRS = ("norden cpc levelup dip",)
 NEVER_SHIP_EXT = (".prev", ".bak")
 DOCS = ("LICENSE", "NOTICE.md")
@@ -130,7 +133,9 @@ def main(argv):
             if orig:
                 if sha(orig) == sha(src):
                     identical.append(rel)
-            elif not any(rel.lower() == d[0].lower() for d in DIP_OUTPUTS) and not rel.lower().startswith(DIP_PATCH_DIR.lower() + os.sep):
+            elif (not any(rel.lower() == d[0].lower() for d in DIP_OUTPUTS)
+                  and not rel.lower().startswith(DIP_PATCH_DIR.lower() + os.sep)
+                  and rel.lower() != DIP_DESCRIPTOR.lower()):   # the descriptor this script writes
                 ours.append(rel)
             dst = os.path.join(out, rel)
             os.makedirs(os.path.dirname(dst), exist_ok=True)

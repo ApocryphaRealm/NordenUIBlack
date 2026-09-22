@@ -1,6 +1,6 @@
 Norden UI - Black
 =================
-Version 1.0.1
+Version 1.0.2
 
 Norden UI with its panel grey taken to black. Norden's #333333 panels become pure black; its
 lighter greys keep half their distance above the panel, so headers, hover states and dividers stay
@@ -26,7 +26,7 @@ Patcher reads. Character Progression Control's level-up screen is ours and ships
 WHAT CHANGED
 ------------
 
-Version 1.0.1
+Version 1.0.2
 RaceMenu's race menu and bottom bar are no longer shipped as finished files; the package carries
 their DIP deltas and the Automatic DIP Patcher descriptor instead, the way Norden UI does.
 Everything else is unchanged.
