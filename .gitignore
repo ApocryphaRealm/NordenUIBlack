@@ -1,0 +1,11 @@
+# Norden UI's permissions forbid uploading its art anywhere but Nexus: every file that carries it stays local.
+SKSE/
+Interface/
+MapMarkers/
+dip-patches/
+build/
+*.swf
+*.bin
+*.svg
+__pycache__/
+*.pyc
