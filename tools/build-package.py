@@ -4,14 +4,14 @@ r"""Assemble "Norden UI - Black": Norden UI with its panel grey taken to black, 
 WHAT THIS PACKAGES
     1. The recoloured Norden UI files that recolour.py / recolour-svg.py wrote into the built mod folder
        (NORDEN_BLACK): every Norden SWF with a panel grey in it, Norden's Wheeler SVGs, its moreHUD presets.
-    2. Three menus whose art is NOT a loose Norden file. Norden restyles them at run time through the Dynamic
-       Interface Patcher; here the patcher's xdelta is applied OFFLINE to the original file and the finished SWF is
-       shipped, so a player needs neither DIP nor the Automatic DIP Patcher:
-         Interface\racesex_menu.swf              RaceMenu.bsa's race menu      (dip-patches\Norden Black RaceMenu DIP)
-         Interface\racemenu\bottombar.swf        RaceMenu.bsa's bottom bar     (same)
-         Interface\CharacterProgressionControl\levelupmenu.swf   Character Progression Control's level-up screen
-                                                                               (dip-patches\Norden CPC LevelUp DIP)
-    The deltas and their DIP .json descriptors are build inputs; none of them is shipped.
+    2. Three menus whose art is NOT a loose Norden file:
+         Interface\racesex_menu.swf              RaceMenu.bsa's race menu   -> shipped as a DIP patch (deltas), 1.0.1
+         Interface\racemenu\bottombar.swf        RaceMenu.bsa's bottom bar  -> shipped as a DIP patch (deltas), 1.0.1
+         Interface\CharacterProgressionControl\levelupmenu.swf   CPC's level-up screen -> shipped finished (CPC is ours)
+       RaceMenu's files are never distributed, patched or not (their team takes such uploads down); the package ships
+       "Norden Black RaceMenu DIP\Patch\..." xdelta deltas and SKSE\Plugins\AutomaticPatcher\DIP\Norden-Black-RaceMenu.json,
+       exactly the shape of Norden UI's own RaceMenu download, and the Dynamic Interface Patcher builds the black files
+       from the player's own RaceMenu.bsa. The CPC delta stays a build input.
 
 WHY THE REPOSITORY HOLDS NO ART
     Norden UI (Nexus 166086, by Nithog) allows modification and release on Nexus with credit, and forbids uploading
@@ -19,7 +19,7 @@ WHY THE REPOSITORY HOLDS NO ART
     of git (.gitignore); this script reads the built mod folder and the original mods at build time.
 
 WHAT IT REFUSES TO DO
-    * ship a DIP delta, a DIP .json, a .prev backup or an MO2 meta.ini;
+    * ship a .prev backup, an MO2 meta.ini, or the finished RaceMenu files (1.0.1: their deltas ship instead);
     * ship a recoloured file that is byte-identical to Norden UI's own (the silent no-op recolour);
     * ship a DIP output that is byte-identical to the file it patches, or one xdelta could not build (a source
       that changed since the delta was made - RaceMenu or CPC updated);
@@ -44,7 +44,8 @@ MODS = r"D:\modlists\Njordlinger\mods"
 BUILT = os.environ.get("NORDEN_BLACK", os.path.join(MODS, "unpublished Norden UI - Black"))
 NORDEN = os.environ.get("NORDEN_UI", os.path.join(MODS, "Norden UI"))
 # Norden UI's second download on the same page (its RaceMenu DIP patch and loose Interface/racemenu/buttonart.swf)
-NORDEN_DIP = os.environ.get("NORDEN_UI_DIP", os.path.join(MODS, "Norden UI DIP Patch"))
+NORDEN_DIP = os.environ.get("NORDEN_UI_DIP", next((os.path.join(MODS, d) for d in ("Norden UI DIP Patch", "[Patch] Norden UI DIP Patch")
+                                                     if os.path.isdir(os.path.join(MODS, d))), os.path.join(MODS, "Norden UI DIP Patch")))
 RACEMENU_BSA = os.environ.get("RACEMENU_BSA", os.path.join(MODS, "RaceMenu", "RaceMenu.bsa"))
 CPC_MOD = os.environ.get("CPC_MOD", os.path.join(MODS, "Character Progression Control"))
 BSARCH = os.environ.get("BSARCH", r"D:\modlists\Njordlinger\tools\BSArch\BSArch.exe")
@@ -52,18 +53,30 @@ XDELTA = os.environ.get("XDELTA", os.path.join(MODS, "Dynamic Interface Patcher 
 GATE = os.environ.get("SWF_COLOUR_GATE", r"D:\Claude output\.MD\scripts\swf-colour-gate.py")
 PATCHES = os.path.join(REPO, "dip-patches")
 
-# (shipped path, where the original comes from, delta)
+# 1.0.1 (2026-09-22): RaceMenu's two menus are NOT shipped as finished SWFs any more. The RaceMenu team takes down
+# anything that distributes their files, patched or not (borokoshow to the owner, 2026-09-22: "racemenu team comes
+# after everyone who distributes their files. Even UI patches. They took down Edge UI until the author removed his
+# patches"; the owner: "ill have to change that then"). Like Norden UI's own RaceMenu download, the package now ships
+# the DELTAS as a Dynamic Interface Patcher patch plus the Automatic DIP Patcher descriptor, and DIP builds the black
+# files on the player's machine from the player's own RaceMenu.bsa. The build still applies the deltas here, to a
+# temporary folder, to prove they fit the current RaceMenu.bsa and read the colour back - nothing of that is shipped.
+# Character Progression Control is our own mod, so its level-up screen still ships finished.
+#
+# (shipped path, where the original comes from, delta, shipped as: "swf" = the finished file, "dip" = the delta)
 DIP_OUTPUTS = [
     (r"Interface\racesex_menu.swf", ("bsa", r"interface\racesex_menu.swf"),
-     r"Norden Black RaceMenu DIP\Patch\RaceMenu.bsa\interface\racesex_menu.bin"),
+     r"Norden Black RaceMenu DIP\Patch\RaceMenu.bsa\interface\racesex_menu.bin", "dip"),
     (r"Interface\racemenu\bottombar.swf", ("bsa", r"interface\racemenu\bottombar.swf"),
-     r"Norden Black RaceMenu DIP\Patch\RaceMenu.bsa\interface\racemenu\bottombar.bin"),
+     r"Norden Black RaceMenu DIP\Patch\RaceMenu.bsa\interface\racemenu\bottombar.bin", "dip"),
     (r"Interface\CharacterProgressionControl\levelupmenu.swf",
      ("loose", os.path.join(CPC_MOD, r"Interface\CharacterProgressionControl\levelupmenu.swf")),
-     r"Norden CPC LevelUp DIP\Patch\interface\CharacterProgressionControl\levelupmenu.bin"),
+     r"Norden CPC LevelUp DIP\Patch\interface\CharacterProgressionControl\levelupmenu.bin", "swf"),
 ]
-NEVER_SHIP_DIRS = ("norden black racemenu dip", "norden cpc levelup dip", os.path.join("skse", "plugins", "automaticpatcher"))
-NEVER_SHIP_EXT = (".bin", ".prev", ".bak")
+DIP_PATCH_DIR = "Norden Black RaceMenu DIP"                                   # shipped, with its .bin deltas
+DIP_DESCRIPTOR = os.path.join("SKSE", "Plugins", "AutomaticPatcher", "DIP", "Norden-Black-RaceMenu.json")
+DIP_DESCRIPTOR_TEXT = '[\n   {\n      "patchPath": "Data\\\\' + DIP_PATCH_DIR + '",\n      "alreadyPatched": true\n   }\n]\n'
+NEVER_SHIP_DIRS = ("norden cpc levelup dip",)
+NEVER_SHIP_EXT = (".prev", ".bak")
 DOCS = ("LICENSE", "NOTICE.md")
 
 
@@ -86,6 +99,10 @@ def shipped(rel):
     low = rel.lower()
     if low == "meta.ini" or low.endswith(NEVER_SHIP_EXT):
         return False
+    if low.endswith(".bin") and not low.startswith(DIP_PATCH_DIR.lower() + os.sep):
+        return False                     # a delta ships only inside the RaceMenu DIP patch folder
+    if low.endswith(".swf") and any(low == d[0].lower() for d in DIP_OUTPUTS if d[3] == "dip"):
+        return False                     # never the finished RaceMenu files, wherever they turn up
     return not any(low.startswith(d + os.sep) for d in NEVER_SHIP_DIRS)
 
 
@@ -107,13 +124,13 @@ def main(argv):
         for n in names:
             src = os.path.join(root, n)
             rel = os.path.relpath(src, BUILT)
-            if not shipped(rel):
-                continue
+            if not shipped(rel) or rel in DOCS + ("README.txt",):
+                continue                 # the documents come from the repo (step 3), not from the installed copy
             orig = next((o for o in (os.path.join(NORDEN, rel), os.path.join(NORDEN_DIP, rel)) if os.path.exists(o)), None)
             if orig:
                 if sha(orig) == sha(src):
                     identical.append(rel)
-            elif not any(rel.lower() == d[0].lower() for d in DIP_OUTPUTS):
+            elif not any(rel.lower() == d[0].lower() for d in DIP_OUTPUTS) and not rel.lower().startswith(DIP_PATCH_DIR.lower() + os.sep):
                 ours.append(rel)
             dst = os.path.join(out, rel)
             os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -132,14 +149,16 @@ def main(argv):
     r = subprocess.run([BSARCH, "unpack", RACEMENU_BSA, bsa_dir], capture_output=True, text=True)
     if r.returncode != 0:
         fail("BSArch could not unpack RaceMenu.bsa: " + (r.stderr or r.stdout)[-300:])
-    for rel, (kind, where), delta in DIP_OUTPUTS:
+    proof_dir = os.path.join(tmp, "proof")
+    for rel, (kind, where), delta_rel, ship_as in DIP_OUTPUTS:
         orig = os.path.join(bsa_dir, where) if kind == "bsa" else where
-        delta = os.path.join(PATCHES, delta)
+        delta = os.path.join(PATCHES, delta_rel)
         if not os.path.exists(orig):
             fail("original for %s not found: %s" % (rel, orig))
         if not os.path.exists(delta):
             fail("delta for %s not found: %s" % (rel, delta))
-        dst = os.path.join(out, rel)
+        # the finished file: shipped for our own CPC, built only as PROOF (never shipped) for RaceMenu
+        dst = os.path.join(out if ship_as == "swf" else proof_dir, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         r = subprocess.run([XDELTA, "-d", "-f", "-s", orig, delta, dst], capture_output=True, text=True)
         if r.returncode != 0 or not os.path.exists(dst):
@@ -147,7 +166,23 @@ def main(argv):
                  % (rel, (r.stderr or r.stdout)[-300:]))
         if sha(dst) == sha(orig):
             fail("%s came out identical to the file it patches" % rel)
-        print("build-package: built  %-56s %s" % (rel, sha(dst)[:16]))
+        if ship_as == "dip":
+            shipped_delta = os.path.join(out, delta_rel)
+            os.makedirs(os.path.dirname(shipped_delta), exist_ok=True)
+            shutil.copy2(delta, shipped_delta)
+            print("build-package: delta  %-56s %s  (proof %s)" % (delta_rel, sha(delta)[:16], sha(dst)[:16]))
+        else:
+            print("build-package: built  %-56s %s" % (rel, sha(dst)[:16]))
+    desc = os.path.join(out, DIP_DESCRIPTOR)
+    os.makedirs(os.path.dirname(desc), exist_ok=True)
+    open(desc, "w", encoding="utf-8", newline="\n").write(DIP_DESCRIPTOR_TEXT)
+    # the colour of the RaceMenu proof files is read back too, from the temporary folder
+    if os.path.exists(GATE) and os.path.isdir(proof_dir):
+        r = subprocess.run([sys.executable, GATE, os.path.join(proof_dir, "Interface"), "--band", "41,102"], capture_output=True, text=True)
+        if r.returncode != 0:
+            print(r.stdout[-2000:])
+            fail("a RaceMenu delta no longer produces the black menu")
+        print("build-package: colour gate pass on the RaceMenu proof files (not shipped)")
     shutil.rmtree(tmp, ignore_errors=True)
 
     # 3. documents
@@ -164,8 +199,12 @@ def main(argv):
             rel = os.path.relpath(os.path.join(root, n), out)
             if rel in DOCS + ("README.txt",):
                 continue
+            if rel == DIP_DESCRIPTOR:
+                continue
             if not shipped(rel) or n.lower().endswith(".json") and "automaticpatcher" in rel.lower():
                 fail("package carries a build input: " + rel)
+            if rel.lower() in (d[0].lower() for d in DIP_OUTPUTS if d[3] == "dip"):
+                fail("a finished RaceMenu file is in the package: " + rel)   # SkyUI has a bottombar.swf of its own: exact paths only
     if os.path.exists(GATE):
         dirs = [os.path.join(out, d) for d in ("Interface", "MapMarkers") if os.path.isdir(os.path.join(out, d))]
         # the tween menu's dividers and arrows (shapes 32, 83) are hand-tuned lighter on purpose
@@ -178,7 +217,7 @@ def main(argv):
     else:
         print("build-package: note  swf-colour-gate.py not found; colour not read back")
     total = sum(len(f) for _, _, f in os.walk(out))
-    print("build-package: pass  %s  (%d recoloured files, %d DIP outputs, %d files in all)"
+    print("build-package: pass  %s  (%d recoloured files, %d DIP-built (1 shipped finished, 2 as deltas), %d files in all)"
           % (out, copied, len(DIP_OUTPUTS), total))
 
 

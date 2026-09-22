@@ -15,7 +15,9 @@ with credit, on Nexus only. This package requires Norden UI and is released on N
 RaceMenu (by expired6978), Character Progression Control, SkyUI, moreHUD, Wheeler, SkyHUD, True
 Directional Movement, Better Third Person Selection, Dragon's Eye Minimap / InfinityUI and the map
 marker resource mods are the menus Norden UI restyles; their authors' credit is on Norden UI's page.
-Where a menu's original lives inside another mod's archive (RaceMenu.bsa, Character Progression
+Since 1.0.1 nothing of RaceMenu's is shipped at all: the package carries xdelta deltas for its two menus and
+the Dynamic Interface Patcher builds the black files on the player's machine, as Norden UI's own RaceMenu
+download does. Where a menu's original lives inside another mod's archive (RaceMenu.bsa, Character Progression
 Control), the package ships the patched result only, exactly as Norden's own DIP patch produces it at
 run time - that archive is not redistributed.
 

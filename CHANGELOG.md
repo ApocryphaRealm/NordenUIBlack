@@ -1,5 +1,15 @@
 # Changelog - Norden UI - Black
 
+## 1.0.1 - 2026-09-22
+
+* RaceMenu's race menu and bottom bar are shipped as a Dynamic Interface Patcher patch (xdelta deltas in
+  `Norden Black RaceMenu DIP\Patch\RaceMenu.bsa\...` plus `SKSE\Plugins\AutomaticPatcher\DIP\Norden-Black-RaceMenu.json`),
+  no longer as finished SWFs - RaceMenu's team takes down anything that distributes their files, patched or
+  not (borokoshow to the owner, 2026-09-22). The build still applies the deltas to a temporary folder to prove
+  they fit the current RaceMenu.bsa and reads the colour back; nothing of that is shipped. Character
+  Progression Control's level-up screen (our own mod) still ships finished. Players need DIP (and ideally the
+  Automatic DIP Patcher) for the RaceMenu part, as with Norden UI's own RaceMenu download.
+
 ## 1.0.0
 
 First release (the owner, 2026-09-18: *"then norden in black color while maintaining nordens opacity
