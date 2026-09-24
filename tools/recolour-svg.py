@@ -15,8 +15,12 @@ swf-colour-gate lesson: prove the effect on the shipped file, not the script).
 """
 import os, re, sys, collections, shutil
 
-SRC = os.path.join(os.environ.get("NORDEN_UI", r"D:\modlists\Njordlinger\mods\Norden UI"), "SKSE", "Plugins", "wheeler")
-DSTS = [os.path.join(os.environ.get("NORDEN_BLACK", r"D:\modlists\Njordlinger\mods\unpublished Norden UI - Black"), "SKSE", "Plugins", "wheeler")]
+# NORDEN_SVG_ALL=1 (the full-archive build, 2026-09-24): walk the whole NORDEN_UI tree - every installer option's
+# Wheeler icon set - and write each changed SVG to the same relative path under NORDEN_BLACK.
+_ALL = os.environ.get("NORDEN_SVG_ALL") == "1"
+_SUB = () if _ALL else ("SKSE", "Plugins", "wheeler")
+SRC = os.path.join(os.environ.get("NORDEN_UI", r"D:\modlists\Njordlinger\mods\Norden UI"), *_SUB)
+DSTS = [os.path.join(os.environ.get("NORDEN_BLACK", r"D:\modlists\Njordlinger\mods\unpublished Norden UI - Black"), *_SUB)]
 HEX = re.compile(r'(?P<key>\b(?:fill|stroke|stop-color|flood-color|lighting-color)\s*[:=]\s*"?)(?P<hex>#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})(?![0-9a-fA-F])')
 
 def parse(h):

@@ -6,7 +6,7 @@ import os, re, subprocess, sys, time, collections
 from concurrent.futures import ThreadPoolExecutor
 FF = r"C:\Program Files (x86)\FFDec\ffdec-cli.exe"
 HERE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build")
-SRC_XML = os.path.join(HERE, "xml"); DST_XML = os.path.join(HERE, "xml-black")
+SRC_XML = os.environ.get("NORDEN_XML", os.path.join(HERE, "xml")); DST_XML = os.environ.get("NORDEN_XML_BLACK", os.path.join(HERE, "xml-black"))   # full-archive build: its own XML dirs (2026-09-24)
 MOD = os.environ.get("NORDEN_BLACK", r"D:\modlists\Njordlinger\mods\unpublished Norden UI - Black")
 attr = re.compile(r'(\w+)="([^"]*)"')
 node = re.compile(r'<(\w+) type="(RGBA?)"((?:\s+\w+="[^"]*")+)/>')

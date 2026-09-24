@@ -3,7 +3,7 @@ import os, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
 FF = r"C:\Program Files (x86)\FFDec\ffdec-cli.exe"
 SRC = os.environ.get("NORDEN_UI", r"D:\modlists\Njordlinger\mods\Norden UI")
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build", "xml")
+OUT = os.environ.get("NORDEN_XML", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build", "xml"))   # NORDEN_XML: the full-archive build keeps its own XML (2026-09-24)
 jobs = []
 for root, _, files in os.walk(SRC):
     for f in files:

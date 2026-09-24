@@ -1,5 +1,17 @@
 # Changelog - Norden UI - Black
 
+## 1.0.3 - 2026-09-24 - untested
+
+* **All of Norden UI, not just one install's choices** (the owner, 2026-09-24: "recolor all of Norden UI ... so that I
+  have a more comprehensive build to post to Nexus"). Earlier builds recoloured the Norden UI folder as installed here -
+  one set of installer choices, 345 SWFs. 1.0.3 recolours Norden UI 1.2.6's whole archive - every option of its
+  installer (926 SWFs, 150 Wheeler SVGs) and its separate QuickLoot IE 4.0 BETA file - with the same rule, and ships as
+  a FOMOD that asks Norden's own questions: pick the same answers as for Norden UI. Options with nothing to recolour
+  install nothing. A last page offers the menus that are not Norden's loose files (RaceMenu through the Automatic DIP
+  Patcher, Character Progression Control's level-up screen, QuickLoot 4.0 BETA). The moreHUD layout (inventory widget
+  right-aligned) is applied to both resolutions' presets. Textures and the INI/JSON presets are Norden's own: none
+  carries a panel grey at or below the rule's threshold.
+
 ## 1.0.2 - 2026-09-22
 
 * The Automatic DIP Patcher descriptor shipped `"alreadyPatched": true`, the flag that tells the patcher a patch is
