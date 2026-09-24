@@ -131,7 +131,10 @@ extra("RaceMenu - black race menu (Automatic DIP Patcher)",
       "download this ships a Dynamic Interface Patcher patch: the Automatic DIP Patcher builds the black files from your "
       "own RaceMenu. Requires RaceMenu and the Automatic DIP Patcher; install Norden Racemenu DIP too.",
       [("folder", r"Extras\RaceMenu DIP\Norden Black RaceMenu DIP", "Norden Black RaceMenu DIP"),
-       ("file", r"Extras\RaceMenu DIP\Norden-Black-RaceMenu.json", r"SKSE\Plugins\AutomaticPatcher\DIP\Norden-Black-RaceMenu.json")])
+       ("file", r"Extras\RaceMenu DIP\Norden-Black-RaceMenu.json", r"SKSE\Plugins\AutomaticPatcher\DIP\Norden-Black-RaceMenu.json"),
+       # Norden's own RaceMenu download ships this loose beside its DIP patch; 1.0.2 shipped it black and the first
+       # 1.0.3 FOMOD dropped it (2026-09-24, gate rule fomod-delivers-every-file-of-previous)
+       ("file", r"Extras\RaceMenu DIP\buttonart.swf", r"Interface\racemenu\buttonart.swf")])
 extra("Character Progression Control - level-up screen",
       "Character Progression Control's level-up screen in Norden's style, black. Only for Character Progression Control.",
       [("file", r"Extras\Character Progression Control\levelupmenu.swf", r"Interface\CharacterProgressionControl\levelupmenu.swf")])
@@ -208,6 +211,8 @@ if untuned_variants:
 
 shutil.copytree(dip_dir, os.path.join(OUT, "Extras", "RaceMenu DIP", "Norden Black RaceMenu DIP"))
 shutil.copy2(dip_json, os.path.join(OUT, "Extras", "RaceMenu DIP", "Norden-Black-RaceMenu.json"))
+shutil.copy2(os.path.join(EXTRAS_FROM, "Interface", "racemenu", "buttonart.swf"),
+             os.path.join(OUT, "Extras", "RaceMenu DIP", "buttonart.swf"))
 os.makedirs(os.path.join(OUT, "Extras", "Character Progression Control"))
 shutil.copy2(cpc, os.path.join(OUT, "Extras", "Character Progression Control", "levelupmenu.swf"))
 os.makedirs(os.path.join(OUT, "Extras", "QuickLoot IE 4.0 BETA"))
