@@ -1,6 +1,6 @@
 # Changelog - Norden UI - Black
 
-## 1.0.3 - 2026-09-24 - untested
+## 1.0.3 - 2026-09-24 - working
 
 * **All of Norden UI, not just one install's choices** (the owner, 2026-09-24: "recolor all of Norden UI ... so that I
   have a more comprehensive build to post to Nexus"). Earlier builds recoloured the Norden UI folder as installed here -
@@ -11,6 +11,8 @@
   Patcher, Character Progression Control's level-up screen, QuickLoot 4.0 BETA). The moreHUD layout (inventory widget
   right-aligned) is applied to both resolutions' presets. Textures and the INI/JSON presets are Norden's own: none
   carries a panel grey at or below the rule's threshold.
+* The RaceMenu option also installs Norden's loose `Interfaceacemenuuttonart.swf`, black, as 1.0.2 did (the
+  first 1.0.3 installer had no entry for it).
 
 ## 1.0.2 - 2026-09-22
 
