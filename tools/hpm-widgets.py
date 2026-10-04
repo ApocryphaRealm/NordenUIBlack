@@ -65,14 +65,18 @@ def rect(x0, x1, y0, y1):
     return w.out()
 
 
-def matrix(tx, ty, sx=1.0, sy=1.0):
+def matrix(tx, ty, sx=1.0, sy=1.0, r0=0.0, r1=0.0):
     w = W()
     if sx != 1.0 or sy != 1.0:
         a, d = int(round(sx * 65536)), int(round(sy * 65536))
         n = nbits(a, d); w.u(1, 1); w.u(n, 5); w.s(a, n); w.s(d, n)
     else:
         w.u(0, 1)
-    w.u(0, 1)
+    if r0 or r1:   # the STB equip cross's backs are turned to point outward
+        b, c = int(round(r0 * 65536)), int(round(r1 * 65536))
+        n = nbits(b, c); w.u(1, 1); w.u(n, 5); w.s(b, n); w.s(c, n)
+    else:
+        w.u(0, 1)
     t = [int(round(tx * 20)), int(round(ty * 20))]
     n = nbits(*t) if any(t) else 0
     w.u(n, 5)
@@ -320,6 +324,88 @@ def text_widget(src, widget, icon_name, text_name):
     return w, h, extra, root
 
 
+def right_aligned(src, cid, new_id):
+    """A copy of a DefineEditText (code 37) under a new id with its alignment set to right - a field that reads toward
+    the art it sits left of."""
+    code, body = src.defs[cid]
+    pos = 2
+    nb = body[pos] >> 3
+    pos += (5 + 4 * nb + 7) // 8
+    f1, f2 = body[pos], body[pos + 1]
+    pos += 2
+    if f1 & 0x01:
+        pos += 2                                  # font id
+    if f2 & 0x80:
+        pos = body.index(b"\x00", pos) + 1       # font class
+    if f1 & 0x01:
+        pos += 2                                  # height
+    if f1 & 0x04:
+        pos += 4                                  # colour
+    if f1 & 0x02:
+        pos += 2                                  # max length
+    out = bytearray(struct.pack("<H", new_id) + body[2:])
+    if f2 & 0x20:
+        out[pos] = 1                              # layout: align right
+    out = bytes(out).replace(b'align="left"', b'align="right"')
+    return tag(37, out)
+
+
+def resist_widget(src, widget):
+    """STB's resist widget: its eight icons as Icon..Icon8 and its eight fields as Value..Value8, in HPM's order (fire,
+    frost, shock, magic, poison, disease, armor, speed), under an invisible Frame."""
+    items = {p["name"]: p for p in src.children(widget) if p["name"]}
+    order = ["fire", "frost", "electric", "magic", "poison", "desease", "armor", "speed"]
+    parts = []
+    for i, k in enumerate(order):
+        sfx = "" if i == 0 else str(i + 1)
+        parts.append((items[k + "Icon"], "Icon" + sfx))
+        parts.append((items[k + "Text"], "Value" + sfx))
+    boxes = [src.bbox(p["id"], p["matrix"]) for p, _ in parts]
+    x0, y0 = min(b[0] for b in boxes), min(b[2] for b in boxes)
+    x1, y1 = max(b[1] for b in boxes), max(b[3] for b in boxes)
+    fid = src.max_id + 1
+    extra = clear_shape(fid, x1 - x0, y1 - y0) + sprite(fid + 1, [(1, fid, None, None, None, None)])
+    root = [(1, fid + 1, "Frame", (0.0, 0.0, 1.0, 1.0), None, None)]
+    for d, (p, name) in enumerate(parts, start=2):
+        m = p["matrix"]
+        root.append((d, p["id"], name, (m[4] - x0, m[5] - y0, m[0], m[1]), None, None))
+    return x1 - x0, y1 - y0, extra, root
+
+
+def equip_widget(src, widget):
+    """STB's equip cross (Norden's four leaf backs, turned outward) as Frame, and its fields: Value the right hand
+    (rightText, bottom), Value2 the left hand (leftText, top), Value3 the shout or power (shoutText, right), Value4 the
+    ammo - arrowText's look in a right-aligned copy beside the LEFT back (STB keeps that back for potions, which HPM does
+    not show yet). Icon / Icon2 are STB's item-type icon (28 frames - HPM steps them by the item's type), Icon3 its
+    shout / power icon (2 frames), Icon4 its arrow icon; all frames are kept."""
+    kids = src.children(widget)
+    items = {p["name"]: p for p in kids if p["name"]}
+    back_id = items["leftBack"]["id"]
+    backs = [p for p in kids if p["id"] == back_id]
+    bb = src.bbox(back_id)
+    half_w = (bb[1] - bb[0]) / 2
+    boxes = [(p["matrix"][4] + bb[0], p["matrix"][4] + bb[1], p["matrix"][5] + bb[2], p["matrix"][5] + bb[3]) for p in backs]
+    x0, y0 = min(b[0] for b in boxes), min(b[2] for b in boxes)
+    x1, y1 = max(b[1] for b in boxes), max(b[3] for b in boxes)
+    nid = src.max_id + 1
+    frame_children = []
+    for p in backs:
+        sx, sy, r0, r1, tx, ty = p["matrix"]
+        frame_children.append((p["depth"], back_id, None, matrix(tx - x0, ty - y0, sx, sy, r0, r1), None, None))
+    extra = sprite(nid, frame_children) + right_aligned(src, items["arrowText"]["id"], nid + 1)
+    root = [(1, nid, "Frame", (0.0, 0.0, 1.0, 1.0), None, None)]
+    for d, (k, name) in enumerate((("rightText", "Value"), ("leftText", "Value2"), ("shoutText", "Value3"),
+                                   ("rightIcon", "Icon"), ("leftIcon", "Icon2"), ("shoutIcon", "Icon3"), ("arrowIcon", "Icon4")), start=6):
+        m = items[k]["matrix"]
+        root.append((d, items[k]["id"], name, (m[4] - x0, m[5] - y0, m[0], m[1]), None, None))
+    left = min(backs, key=lambda p: p["matrix"][4])
+    am = items["arrowText"]["matrix"]
+    fb = src.bbox(items["arrowText"]["id"], (am[0], am[1], 0, 0, 0, 0))
+    lx = left["matrix"][4] - half_w - 4
+    root.append((5, nid + 1, "Value4", (lx - fb[1] - x0, left["matrix"][5] - (fb[3] - fb[2]) / 2 - y0, am[0], am[1]), None, None))
+    return x1 - x0, y1 - y0, extra, root
+
+
 def level_widget(src, widget):
     """lvlWidget: its meter back as Frame, its meter as a left-registered Fill, its level text as Value."""
     items = {p["name"]: p for p in src.children(widget) if p["name"]}
@@ -380,6 +466,10 @@ def main():
         "gold.swf": lambda: widget_job(s("goldWidget.swf"), lambda src, w: text_widget(src, w, "gold_Icon", "goldText")),
         "weight.swf": lambda: widget_job(s("weightWidget.swf"), lambda src, w: text_widget(src, w, "weightIcon", "weight_Text")),
         "time.swf": lambda: widget_job(s("gametimeWidget.swf"), lambda src, w: text_widget(src, w, "gametimeIcon1", "gametime_Text")),
+        # Norden UI - Black has no play-time skin: play time wears the game-time widget's (the same STB family, a clock)
+        "playtime.swf": lambda: widget_job(s("gametimeWidget.swf"), lambda src, w: text_widget(src, w, "gametimeIcon1", "gametime_Text")),
+        "resist.swf": lambda: widget_job(s("resistWidget.swf"), resist_widget),
+        "equip.swf": lambda: widget_job(s("equipWidget_STB.swf"), equip_widget, keep_all_frames=True),
     }
 
     def find_sprite(src, name):
@@ -398,9 +488,12 @@ def main():
         cid = find_sprite(src, container_name)
         return src, meter_from_container(src, cid, bar, deco, tint)
 
-    def widget_job(src, fn):
+    def widget_job(src, fn, keep_all_frames=False):
         wid = find_sprite(src, "widget")
-        return src, fn(src, wid)
+        out = fn(src, wid)
+        if keep_all_frames:   # every sprite keeps its frames (the icons HPM steps), ActionScript still dropped
+            src.keep_frames = {cid for cid, (code, _) in src.defs.items() if code == 39}
+        return src, out
 
     hud = s("hudmenu.swf")
     w, h, extra, root, subset, keep = level_badge(hud)
@@ -409,7 +502,7 @@ def main():
 
     for name, job in jobs.items():
         src, (w, h, extra, root) = job()
-        n = write(os.path.join(a.out, name), src, w, h, extra, root)
+        n = write(os.path.join(a.out, name), src, w, h, extra, root, keep_frames=getattr(src, "keep_frames", ()))
         print(f"{name:14} {w:7.1f} x {h:6.1f}  {n:7} bytes  from {os.path.basename(src.path)}  [{', '.join(r[2] for r in root if r[2])}]")
 
 

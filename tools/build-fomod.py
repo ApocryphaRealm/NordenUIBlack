@@ -160,7 +160,7 @@ extra("QuickLoot IE 4.0 BETA",
 # nothing else in the package changes - the CastingBar / STB Widgets / oxygen meter reskins stay as they were.
 # Recommended when HPM's DLL is installed, otherwise optional and unticked.
 HPM_WIDGETS = os.environ.get("NORDEN_HPM_WIDGETS", os.path.join(BUILD, "hpm-widgets", "Interface", "HUDPositionManager", "widgets"))
-HPM_NAMES = ("breath", "casting", "detection", "shout", "level", "level_badge", "gold", "weight", "time")
+HPM_NAMES = ("breath", "casting", "detection", "shout", "level", "level_badge", "gold", "weight", "time", "playtime", "resist", "equip")
 for _n in HPM_NAMES:
     if not os.path.exists(os.path.join(HPM_WIDGETS, _n + ".swf")):
         fail(f"HPM widget missing: {_n}.swf - run tools/hpm-widgets.py first")
