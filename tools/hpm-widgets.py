@@ -476,9 +476,10 @@ def trueHUD_bar(src, frame, back, color, overlay, k, fill_hex, phantom_hex, pena
         # the penalty starts at no width: HPM sets it on its first read (a full band showed until then)
         root.append((4, nid + 2, "Penalty", (half, 0.0, 0.0, 1.0), None, cxform_mult(*hexmul(penalty_hex))))
     root.append((5, o, None, (0.0, 0.0, k, 1.0), None, None))
-    if name_field:   # over a character: the name above, the level at the left
-        extra += text_field(nid + 4, 200.0, 16.0, nid + 3, 11) + text_field(nid + 5, 30.0, 14.0, nid + 3, 10, "C8C0B0", 1)
-        root += [(6, nid + 4, "Value", (-100.0, fb[2] - 16.0, 1.0, 1.0), None, None),
+    if name_field:   # over a character (or a boss): the name above, the level at the left
+        nw = max(200.0, 2 * half)
+        extra += text_field(nid + 4, nw, 16.0, nid + 3, 11 if half < 100 else 15) + text_field(nid + 5, 30.0, 14.0, nid + 3, 10, "C8C0B0", 1)
+        root += [(6, nid + 4, "Value", (-nw / 2, fb[2] - (16.0 if half < 100 else 22.0), 1.0, 1.0), None, None),
                  (7, nid + 5, "Value2", (-half - 34.0, -7.0, 1.0, 1.0), None, None)]
     else:            # a player bar: the numbers centred on it
         extra += text_field(nid + 4, 2 * half, bar_h + 4, nid + 3, max(bar_h - 2, 9))
@@ -590,6 +591,12 @@ def main():
                                             "5a251e", "EBEBEB", None, name_field=True)
     n = write(os.path.join(a.out, "infobar.swf"), th, w, h, extra, root, subset)
     print(f"{'infobar.swf':14} {w:7.1f} x {h:6.1f}  {n:7} bytes  from TrueHUD_Assets0.swf  [Frame, Phantom, Fill, Value, Value2]")
+
+    th1 = s("TrueHUD_Assets1.swf")
+    w, h, extra, root, subset = trueHUD_bar(th1, "BossBarFrame", "BossBarBackground", "BossBarColor", "BossBarOverlay", 4.2,
+                                            "5a251e", "EBEBEB", None, name_field=True)
+    n = write(os.path.join(a.out, "bossbar.swf"), th1, w, h, extra, root, subset)
+    print(f"{'bossbar.swf':14} {w:7.1f} x {h:6.1f}  {n:7} bytes  from TrueHUD_Assets1.swf  [Frame, Phantom, Fill, Value, Value2]")
 
     hud = s("hudmenu.swf")
     w, h, extra, root, subset, keep = level_badge(hud)
