@@ -143,21 +143,26 @@ def clear_shape(sid, w, h):
 
 # ------------------------------------------------------------------ reading the source
 
-def first_frame_sprite(body):
-    """A DefineSprite cut to its first frame, its ActionScript (DoAction) dropped."""
+def first_frame_sprite(body, all_frames=False):
+    """A DefineSprite cut to its first frame (or, all_frames, every frame - HPM's Meter steps through them), its
+    ActionScript (DoAction) dropped either way."""
     sid, frames, inner = T.sprite_frames(body)
     keep = b""
+    shown = 0
     for code, b in inner:
         if code == 12:          # DoAction
             continue
         if code == 0:
             break
         keep += tag(code, b)
-        if code == 1:           # the first ShowFrame ends it
-            break
-    else:
+        if code == 1:
+            shown += 1
+            if not all_frames:  # the first ShowFrame ends it
+                break
+    if shown == 0:
         keep += tag(1, b"")
-    return tag(39, struct.pack("<HH", sid, 1) + keep + b"\x00\x00")
+        shown = 1
+    return tag(39, struct.pack("<HH", sid, shown if all_frames else 1) + keep + b"\x00\x00")
 
 
 class Source:
@@ -175,11 +180,37 @@ class Source:
                     self.defs[cid] = (code, body)
         self.max_id = max(self.defs)
 
-    def definitions(self):
+    def definitions(self, subset=None, keep_frames=()):
         out = b""
         for code, body in self.order:
-            out += first_frame_sprite(body) if code == 39 else tag(code, body)
+            if code in (57, 71):
+                out += self.filtered_import(code, body, subset)
+                continue
+            cid = T.char_id(code, body)
+            if subset is not None and cid not in subset:
+                continue
+            out += first_frame_sprite(body, cid in keep_frames) if code == 39 else tag(code, body)
         return out
+
+    @staticmethod
+    def filtered_import(code, body, subset):
+        """An ImportAssets(2) tag with only the ids the subset needs (the badge's font), or nothing."""
+        e = body.index(b"\x00")
+        url, pos = body[:e + 1], e + 1
+        head = b""
+        if code == 71:
+            head, pos = body[pos:pos + 2], pos + 2
+        count = struct.unpack_from("<H", body, pos)[0]; pos += 2
+        keep = []
+        for _ in range(count):
+            iid = struct.unpack_from("<H", body, pos)[0]; pos += 2
+            e = body.index(b"\x00", pos)
+            name = body[pos:e + 1]; pos = e + 1
+            if subset is None or iid in subset:
+                keep.append(struct.pack("<H", iid) + name)
+        if not keep:
+            return b""
+        return tag(code, url + head + struct.pack("<H", len(keep)) + b"".join(keep))
 
     def children(self, sid):
         code, body = self.defs[sid]
@@ -210,11 +241,11 @@ class Source:
 
 # ------------------------------------------------------------------ the widgets
 
-def write(path, src, stage_w, stage_h, extra_defs, root):
+def write(path, src, stage_w, stage_h, extra_defs, root, subset=None, keep_frames=()):
     """root: [(depth, cid, name, (tx, ty, sx, sy), clip, cx)]"""
     payload = rect(0, stage_w, 0, stage_h) + struct.pack("<HH", 30 << 8, 1)
     payload += tag(69, src.fileattr or struct.pack("<I", 0))
-    payload += src.definitions() + extra_defs
+    payload += src.definitions(subset, keep_frames) + extra_defs
     for d, c, n, m, cl, cx in root:
         payload += place(d, c, n, matrix(*m) if m else None, cl, cx)
     payload += tag(1, b"") + b"\x00\x00"
@@ -307,6 +338,28 @@ def level_widget(src, widget):
     return x1 - x0, y1 - y0, extra, root
 
 
+def level_badge(src):
+    """Norden's level badge (hudmenu.swf: LevelMeter > LevelUpMeterInstance + levelValue) - the meter as HPM's Meter (all
+    141 frames), the number as Value, an invisible Frame over the hexagon. Returns (w, h, extra, root, subset, keep)."""
+    lm = None
+    for cid, (code, body) in src.defs.items():
+        if code == 39 and any(p["name"] == "LevelUpMeterInstance" for p in src.children(cid)):
+            lm = cid
+            break
+    items = {p["name"]: p for p in src.children(lm) if p["name"]}
+    meter, value = items["LevelUpMeterInstance"], items["levelValue"]
+    mm, vm = meter["matrix"], value["matrix"]
+    mb = src.bbox(meter["id"], mm)
+    x0, y0, w, h = mb[0], mb[2], mb[1] - mb[0], mb[3] - mb[2]
+    fid = src.max_id + 1
+    extra = clear_shape(fid, w, h) + sprite(fid + 1, [(1, fid, None, None, None, None)])
+    root = [(1, fid + 1, "Frame", (0.0, 0.0, 1.0, 1.0), None, None),
+            (2, meter["id"], "Meter", (mm[4] - x0, mm[5] - y0, mm[0], mm[1]), None, None),
+            (3, value["id"], "Value", (vm[4] - x0, vm[5] - y0, vm[0], vm[1]), None, None)]
+    subset = T.closure(src.defs, [meter["id"], value["id"]])
+    return w, h, extra, root, subset, {meter["id"]}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default=SRC)
@@ -348,6 +401,11 @@ def main():
     def widget_job(src, fn):
         wid = find_sprite(src, "widget")
         return src, fn(src, wid)
+
+    hud = s("hudmenu.swf")
+    w, h, extra, root, subset, keep = level_badge(hud)
+    n = write(os.path.join(a.out, "level_badge.swf"), hud, w, h, extra, root, subset, keep)
+    print(f"{'level_badge.swf':14} {w:7.1f} x {h:6.1f}  {n:7} bytes  from hudmenu.swf  [Frame, Meter, Value]  ({len(subset)} characters)")
 
     for name, job in jobs.items():
         src, (w, h, extra, root) = job()

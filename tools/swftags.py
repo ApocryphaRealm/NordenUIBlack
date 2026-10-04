@@ -161,6 +161,80 @@ def bounds(code, body):
     return None
 
 
+def _skip_matrix(data, pos):
+    return read_matrix(data, pos)[1]
+
+
+def shape_bitmaps(code, body):
+    """The bitmap ids a shape's FIRST fill-style array refers to (bitmap fills 0x40..0x43). Enough for the simple shapes
+    a widget is made of; styles added later in the shape records are not walked."""
+    if code not in (2, 22, 32, 83):
+        return set()
+    pos = 2
+    _, pos = read_rect(body, pos)
+    if code == 83:
+        _, pos = read_rect(body, pos)
+        pos += 1
+    n = body[pos]; pos += 1
+    if n == 0xFF and code != 2:
+        n = struct.unpack_from("<H", body, pos)[0]; pos += 2
+    rgba = code in (32, 83)
+    ids = set()
+    for _ in range(n):
+        t = body[pos]; pos += 1
+        if t == 0x00:
+            pos += 4 if rgba else 3
+        elif t in (0x10, 0x12, 0x13):
+            pos = _skip_matrix(body, pos)
+            hdr = body[pos]; pos += 1
+            pos += (hdr & 0x0F) * (1 + (4 if rgba else 3))
+            if t == 0x13:
+                pos += 2
+        elif 0x40 <= t <= 0x43:
+            bid = struct.unpack_from("<H", body, pos)[0]; pos += 2
+            pos = _skip_matrix(body, pos)
+            if bid != 0xFFFF:
+                ids.add(bid)
+        else:
+            break
+    return ids
+
+
+def edit_text_font(body):
+    """A DefineEditText's font id, or None."""
+    _, pos = read_rect(body, 2)
+    f1 = body[pos]
+    if f1 & 0x01:
+        return struct.unpack_from("<H", body, pos + 2)[0]
+    return None
+
+
+def closure(defs, roots):
+    """Every character id the roots need: sprite children over ALL frames, shapes' bitmaps, edit texts' fonts."""
+    need, todo = set(), list(roots)
+    while todo:
+        cid = todo.pop()
+        if cid in need or cid not in defs:
+            if cid not in defs:
+                need.add(cid)   # an imported id (a font from gfxfontlib): kept so its import entry is copied
+            continue
+        need.add(cid)
+        code, body = defs[cid]
+        if code == 39:
+            for c, b in sprite_frames(body)[2]:
+                if c in (26, 70):
+                    p = place_info(c, b)
+                    if p["id"] is not None:
+                        todo.append(p["id"])
+        elif code in (2, 22, 32, 83):
+            todo.extend(shape_bitmaps(code, body))
+        elif code == 37:
+            f = edit_text_font(body)
+            if f is not None:
+                todo.append(f)
+    return need
+
+
 def dump(path):
     swf = load(path)
     print(f"{path}: SWF {swf['version']}, stage {swf['rect']}, {swf['frames']} frames, {len(swf['tags'])} tags")

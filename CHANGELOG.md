@@ -12,6 +12,9 @@
   nothing else in the package changes. Tested 2026-10-04 in game (Njordlinger Test, SE 1.5.97): all eight loaded
   Norden's art, the meters filled from the left (casting 0.5, detection 0.35 tinted red, breath 0.7, shout 0.6), and the
   text widgets drew in Norden's font with its icons (07:08, 1, 72, 2 / 300).
+- The HPM option also carries level_badge.swf: Norden's own level badge (hudmenu.swf's LevelMeter - the diamond, its
+  141-frame XP fill as HPM's Meter, its level text as Value), only that badge's dependency closure copied out of the
+  HUD file (14 characters, 1.4 KB). Tested in game: reads the level, fills with the XP.
 - build-fomod.py reads the extras (RaceMenu DIP, CPC screen, buttonart) from the previous FOMOD when the old flat
   package is gone.
 
