@@ -18,6 +18,8 @@ the SVGs, the DIP deltas, the intermediate XML) is git-ignored and lives only on
 | `tools/recolour.py --build` | darkens every neutral grey (channel spread <= 3) at or below 102: `v' = max(0, round((v - 51) * 0.5))`, then `-xml2swf` into the mod folder |
 | `tools/recolour-svg.py --write` | the same rule on Norden's Wheeler SVGs |
 | `tools/build-fomod.py` | the FULL build (1.0.3+): every option of Norden UI's installer, recoloured, as a FOMOD that mirrors Norden's own steps and options; run export-xml / recolour / recolour-svg first with `NORDEN_XML`, `NORDEN_XML_BLACK`, `NORDEN_BLACK` (and `NORDEN_SVG_ALL=1`) pointed at `buildull-*` |
+| `tools/hpm-widgets.py` | HUD Position Manager's own widgets (breath, casting, shout, detection, level, gold, carry weight, game time) grafted from the installed Black widget art (CastingBar, oxygenMeter2, STB widgets) into HPM's clip contract (Frame / Fill / Icon / Value) - into `build\hpm-widgets`; shipped as the FOMOD's optional HUD Position Manager option |
+| `tools/swftags.py` | the small SWF tag reader the graft uses; `python tools/swftags.py <file.swf>` dumps a file's definitions and first-frame display lists |
 | `tools/build-package.py` | assembles the package, proves the RaceMenu deltas and builds the CPC file offline, and reads the colour back |
 
 Three menus are not loose Norden files - RaceMenu's race menu and bottom bar (inside `RaceMenu.bsa`; since 1.0.1 shipped as a DIP patch of deltas, never as finished files)

@@ -105,6 +105,17 @@ print(f"installer entries kept {kept}, dropped {dropped} (nothing recoloured in 
 dip_dir = os.path.join(EXTRAS_FROM, "Norden Black RaceMenu DIP")
 dip_json = os.path.join(EXTRAS_FROM, "SKSE", "Plugins", "AutomaticPatcher", "DIP", "Norden-Black-RaceMenu.json")
 cpc = os.path.join(EXTRAS_FROM, "Interface", "CharacterProgressionControl", "levelupmenu.swf")
+buttonart = os.path.join(EXTRAS_FROM, "Interface", "racemenu", "buttonart.swf")
+if not os.path.exists(dip_dir):
+    # 2026-10-04: the flat 1.0.2 package was pruned (rule 23); a previous FOMOD carries the same extras under Extras\
+    _fx = os.environ.get("NORDEN_EXTRAS_FOMOD", os.path.join(os.path.dirname(os.path.dirname(REPO)), "10. finalized mods",
+                                                             "Skyrim - Norden UI - Black", "Norden UI - Black 1.0.3 FOMOD"))
+    dip_dir = os.path.join(_fx, "Extras", "RaceMenu DIP", "Norden Black RaceMenu DIP")
+    dip_json = os.path.join(_fx, "Extras", "RaceMenu DIP", "Norden-Black-RaceMenu.json")
+    buttonart = os.path.join(_fx, "Extras", "RaceMenu DIP", "buttonart.swf")
+    cpc = os.path.join(_fx, "Extras", "Character Progression Control", "levelupmenu.swf")
+    EXTRAS_FROM = _fx
+    print(f"extras from the previous FOMOD: {_fx}")
 ql = os.path.join(BLACK, QL_REL)
 for p in (dip_dir, dip_json, cpc, ql):
     if not os.path.exists(p):
@@ -142,6 +153,34 @@ extra("QuickLoot IE 4.0 BETA",
       "Norden UI's separate 'Norden UI Quickloot 4.0 BETA' download, black. Only if you use QuickLoot IE 4.0 and that "
       "Norden file; otherwise leave it unticked.",
       [("file", r"Extras\QuickLoot IE 4.0 BETA\LootMenuIE.swf", r"Interface\LootMenuIE.swf")])
+
+# HUD Position Manager's own widgets in Norden Black's look (the owner, 2026-10-04: "make it a FOMOD option if they use
+# HUD Position Manager because a lot of people aren't going to be using HUD Position Manager yet and we need to maintain
+# compatibility with the current"). Built by tools/hpm-widgets.py from the installed Norden UI - Black widget art;
+# nothing else in the package changes - the CastingBar / STB Widgets / oxygen meter reskins stay as they were.
+# Recommended when HPM's DLL is installed, otherwise optional and unticked.
+HPM_WIDGETS = os.environ.get("NORDEN_HPM_WIDGETS", os.path.join(BUILD, "hpm-widgets", "Interface", "HUDPositionManager", "widgets"))
+HPM_NAMES = ("breath", "casting", "detection", "shout", "level", "gold", "weight", "time")
+for _n in HPM_NAMES:
+    if not os.path.exists(os.path.join(HPM_WIDGETS, _n + ".swf")):
+        fail(f"HPM widget missing: {_n}.swf - run tools/hpm-widgets.py first")
+_p = ET.SubElement(plugins, "plugin", {"name": "HUD Position Manager - its widgets in Norden Black"})
+ET.SubElement(_p, "description").text = (
+    "Only if you use HUD Position Manager (1.1 or later). HUD Position Manager builds its own HUD widgets - breath, "
+    "casting, shout cooldown, detection, level, gold, carry weight and game time. This dresses them in Norden UI - "
+    "Black's own art (the casting bar, oxygen meter and STB widget styles), instead of HUD Position Manager's plain "
+    "default look. Place Norden UI - Black above HUD Position Manager so these files win.")
+_fs = ET.SubElement(_p, "files")
+ET.SubElement(_fs, "folder", {"source": r"Extras\HUD Position Manager\widgets",
+                              "destination": r"Interface\HUDPositionManager\widgets", "priority": "0"})
+_td = ET.SubElement(_p, "typeDescriptor")
+_dt = ET.SubElement(_td, "dependencyType")
+ET.SubElement(_dt, "defaultType", {"name": "Optional"})
+_pats = ET.SubElement(_dt, "patterns")
+_pat = ET.SubElement(_pats, "pattern")
+_deps = ET.SubElement(_pat, "dependencies", {"operator": "And"})
+ET.SubElement(_deps, "fileDependency", {"file": r"SKSE\Plugins\HUDPositionManager.dll", "state": "Active"})
+ET.SubElement(_pat, "type", {"name": "Recommended"})
 
 # ---- 4. the package ------------------------------------------------------------------------------------------------
 if os.path.exists(OUT):
@@ -211,12 +250,14 @@ if untuned_variants:
 
 shutil.copytree(dip_dir, os.path.join(OUT, "Extras", "RaceMenu DIP", "Norden Black RaceMenu DIP"))
 shutil.copy2(dip_json, os.path.join(OUT, "Extras", "RaceMenu DIP", "Norden-Black-RaceMenu.json"))
-shutil.copy2(os.path.join(EXTRAS_FROM, "Interface", "racemenu", "buttonart.swf"),
-             os.path.join(OUT, "Extras", "RaceMenu DIP", "buttonart.swf"))
+shutil.copy2(buttonart, os.path.join(OUT, "Extras", "RaceMenu DIP", "buttonart.swf"))
 os.makedirs(os.path.join(OUT, "Extras", "Character Progression Control"))
 shutil.copy2(cpc, os.path.join(OUT, "Extras", "Character Progression Control", "levelupmenu.swf"))
 os.makedirs(os.path.join(OUT, "Extras", "QuickLoot IE 4.0 BETA"))
 shutil.copy2(ql, os.path.join(OUT, "Extras", "QuickLoot IE 4.0 BETA", "LootMenuIE.swf"))
+os.makedirs(os.path.join(OUT, "Extras", "HUD Position Manager", "widgets"))
+for _n in HPM_NAMES:
+    shutil.copy2(os.path.join(HPM_WIDGETS, _n + ".swf"), os.path.join(OUT, "Extras", "HUD Position Manager", "widgets", _n + ".swf"))
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
 for f in ("LICENSE", "NOTICE.md"):
     s = os.path.join(EXTRAS_FROM, f)
@@ -248,7 +289,9 @@ Install: Norden UI first, then this, in a slot ABOVE Norden UI (higher priority)
 questions as Norden UI's - pick the same answers. Options with nothing to recolour install nothing and leave Norden's
 own files in place. The last page offers the menus that are not Norden's loose files: RaceMenu (through the Automatic
 DIP Patcher, like Norden's own RaceMenu download), Character Progression Control's level-up screen, and Norden's
-QuickLoot IE 4.0 BETA file.
+QuickLoot IE 4.0 BETA file - and, for HUD Position Manager users, its own HUD widgets (breath, casting, shout,
+detection, level, gold, carry weight, game time) in Norden UI - Black's art. That option is recommended only when HUD
+Position Manager is installed; nothing else changes for anyone who does not use it.
 
 Requirements: Norden UI {NORDEN_VERSION}.
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.
