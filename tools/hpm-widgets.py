@@ -398,6 +398,16 @@ def equip_widget(src, widget):
                                    ("rightIcon", "Icon"), ("leftIcon", "Icon2"), ("shoutIcon", "Icon3"), ("arrowIcon", "Icon4")), start=6):
         m = items[k]["matrix"]
         root.append((d, items[k]["id"], name, (m[4] - x0, m[5] - y0, m[0], m[1]), None, None))
+    # the potions in STB's left back: pot1 (health) as Icon5 / pot1Text as Value5, pot2 (its frames 2 stamina, 3
+    # magicka) twice - Icon6 magicka where STB has it, Icon7 stamina mirrored below - with pot2Text's look for both counts
+    p1, p2, t1, t2 = items["pot1"], items["pot2"], items["pot1Text"], items["pot2Text"]
+    m1, m2, n1, n2 = p1["matrix"], p2["matrix"], t1["matrix"], t2["matrix"]
+    cy = min(backs, key=lambda p: p["matrix"][4])["matrix"][5]
+    for d, (cid, name, m) in enumerate((
+            (p1["id"], "Icon5", m1), (t1["id"], "Value5", n1),
+            (p2["id"], "Icon6", m2), (t2["id"], "Value6", n2),
+            (p2["id"], "Icon7", (m2[0], m2[1], 0, 0, m2[4], 2 * cy - m2[5])), (t2["id"], "Value7", (n2[0], n2[1], 0, 0, n2[4], 2 * cy - n2[5] - 10))), start=20):
+        root.append((d, cid, name, (m[4] - x0, m[5] - y0, m[0], m[1]), None, None))
     left = min(backs, key=lambda p: p["matrix"][4])
     am = items["arrowText"]["matrix"]
     fb = src.bbox(items["arrowText"]["id"], (am[0], am[1], 0, 0, 0, 0))
