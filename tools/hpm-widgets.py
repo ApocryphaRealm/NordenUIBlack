@@ -462,6 +462,8 @@ def main():
         "shout.swf": lambda: meter_job(s("CastingBar_Shout.swf"), "MeterContainer", "Bar", (1, 2)),
         "detection.swf": lambda: meter_job(s("CastingBar_Spell.swf"), "MeterContainer", "Bar", (1, 2), tint=(1.0, 0.35, 0.3)),
         "breath.swf": lambda: meter_job(s("oxygenMeter2.swf"), "MeterContainer", "Bar", (1, 2)),
+        "bowdraw.swf": lambda: meter_job(s("CastingBar_Bow.swf"), "MeterContainer", "Bar", (1, 2)),
+        "shoutcharge.swf": lambda: meter_job(s("CastingBar_Shout.swf"), "MeterContainer", "Bar", (1, 2)),
         "level.swf": lambda: widget_job(s("lvlWidget.swf"), level_widget),
         "gold.swf": lambda: widget_job(s("goldWidget.swf"), lambda src, w: text_widget(src, w, "gold_Icon", "goldText")),
         "weight.swf": lambda: widget_job(s("weightWidget.swf"), lambda src, w: text_widget(src, w, "weightIcon", "weight_Text")),
