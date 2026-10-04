@@ -416,6 +416,77 @@ def equip_widget(src, widget):
     return x1 - x0, y1 - y0, extra, root
 
 
+def exports(src):
+    """The source's ExportAssets table: export name -> character id."""
+    out = {}
+    for code, body in src.swf["tags"]:
+        if code != 56:
+            continue
+        count = struct.unpack_from("<H", body, 0)[0]
+        pos = 2
+        for _ in range(count):
+            cid = struct.unpack_from("<H", body, pos)[0]
+            e = body.index(b"\x00", pos + 2)
+            out[body[pos + 2:e].decode("latin-1")] = cid
+            pos = e + 1
+    return out
+
+
+def font_import(cid, font_name="$EverywhereFont", url="gfxfontlib.swf"):
+    """ImportAssets2 of the game's font from gfxfontlib.swf (as HPM's own widgets and the game's hudmenu.swf do)."""
+    return tag(71, url.encode("latin-1") + b"\x00" + b"\x01\x00" + struct.pack("<H", 1) + struct.pack("<H", cid) + font_name.encode("latin-1") + b"\x00")
+
+
+def text_field(cid, w, h, font_id, size_px, color="E6E1D2", align=2):
+    """A read-only dynamic HTML field in the game's font (HPM's swfgen.edit_text, copied so this repo stands alone)."""
+    a = ("left", "right", "center")[align]
+    initial = f'<p align="{a}"><font face="$EverywhereFont" size="{int(size_px)}" color="#{color}"> </font></p>'
+    body = struct.pack("<H", cid) + rect(0, w, 0, h)
+    body += struct.pack("<BB", 0x01 | 0x04 | 0x08 | 0x80, 0x10 | 0x20 | 0x01 | 0x02)
+    body += struct.pack("<HH", font_id, int(round(size_px * 20)))
+    body += bytes((int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16), 255))
+    body += struct.pack("<BHHHh", align, 0, 0, 0, 0) + b"\x00" + initial.encode("utf-8") + b"\x00"
+    return tag(37, body)
+
+
+def hexmul(c):
+    return (int(c[0:2], 16) / 255.0, int(c[2:4], 16) / 255.0, int(c[4:6], 16) / 255.0)
+
+
+def trueHUD_bar(src, frame, back, color, overlay, k, fill_hex, phantom_hex, penalty_hex=None, name_field=False):
+    """A bar from Norden's own TrueHUD symbols (100 px wide, centred on 0 - their export names, never TrueHUD's originals):
+    Frame (frame + background, stretched to 100 x k), Phantom / Fill (the white colour layer in a wrapper whose origin is
+    its LEFT edge, tinted by a colour transform to Norden's TrueHUD colours), Penalty (the same, origin on its RIGHT edge),
+    Norden's overlay on top, and a Value field (and, for a bar over a character, Value2 for the level). Returns
+    (w, h, extra, root, subset)."""
+    ex = exports(src)
+    f, b, c, o = ex[frame], ex[back], ex[color], ex[overlay]
+    nid = src.max_id + 1
+    half = 50.0 * k
+    extra = sprite(nid, [(1, f, None, matrix(0, 0, k, 1.0), None, None), (2, b, None, matrix(0, 0, k, 1.0), None, None)])
+    extra += sprite(nid + 1, [(1, c, None, matrix(half, 0, k, 1.0), None, None)])    # left edge at the origin
+    extra += sprite(nid + 2, [(1, c, None, matrix(-half, 0, k, 1.0), None, None)])   # right edge at the origin
+    extra += font_import(nid + 3)
+    fb = src.bbox(f)
+    bar_h = fb[3] - fb[2]
+    root = [(1, nid, "Frame", (0.0, 0.0, 1.0, 1.0), None, None),
+            (2, nid + 1, "Phantom", (-half, 0.0, 1.0, 1.0), None, cxform_mult(*hexmul(phantom_hex))),
+            (3, nid + 1, "Fill", (-half, 0.0, 1.0, 1.0), None, cxform_mult(*hexmul(fill_hex)))]
+    if penalty_hex:
+        # the penalty starts at no width: HPM sets it on its first read (a full band showed until then)
+        root.append((4, nid + 2, "Penalty", (half, 0.0, 0.0, 1.0), None, cxform_mult(*hexmul(penalty_hex))))
+    root.append((5, o, None, (0.0, 0.0, k, 1.0), None, None))
+    if name_field:   # over a character: the name above, the level at the left
+        extra += text_field(nid + 4, 200.0, 16.0, nid + 3, 11) + text_field(nid + 5, 30.0, 14.0, nid + 3, 10, "C8C0B0", 1)
+        root += [(6, nid + 4, "Value", (-100.0, fb[2] - 16.0, 1.0, 1.0), None, None),
+                 (7, nid + 5, "Value2", (-half - 34.0, -7.0, 1.0, 1.0), None, None)]
+    else:            # a player bar: the numbers centred on it
+        extra += text_field(nid + 4, 2 * half, bar_h + 4, nid + 3, max(bar_h - 2, 9))
+        root.append((6, nid + 4, "Value", (-half, fb[2] - 2.0, 1.0, 1.0), None, None))
+    subset = T.closure(src.defs, [f, b, c, o])
+    return 2 * half, bar_h, extra, root, subset
+
+
 def level_widget(src, widget):
     """lvlWidget: its meter back as Frame, its meter as a left-registered Fill, its level text as Value."""
     items = {p["name"]: p for p in src.children(widget) if p["name"]}
@@ -506,6 +577,19 @@ def main():
         if keep_all_frames:   # every sprite keeps its frames (the icons HPM steps), ActionScript still dropped
             src.keep_frames = {cid for cid, (code, _) in src.defs.items() if code == 39}
         return src, out
+
+    # HPM's player bars and the bars over characters (phase 4) from Norden's own TrueHUD art, in Norden's TrueHUD colours
+    # (Norden UI's MCM\Settings\TrueHUD.ini: health 5a251e, magicka 395265, stamina 425d2d, phantom EBEBEB, penalty 5F0000)
+    th = s("TrueHUD_Assets0.swf")
+    for name, fill in (("playerhealth.swf", "5a251e"), ("playermagicka.swf", "395265"), ("playerstamina.swf", "425d2d")):
+        w, h, extra, root, subset = trueHUD_bar(th, "LargeBarFrame", "LargeBarBackground", "LargeBarColor", "LargeBarOverlay", 2.4,
+                                                fill, "EBEBEB", "5F0000")
+        n = write(os.path.join(a.out, name), th, w, h, extra, root, subset)
+        print(f"{name:14} {w:7.1f} x {h:6.1f}  {n:7} bytes  from TrueHUD_Assets0.swf  [Frame, Phantom, Fill, Penalty, Value]")
+    w, h, extra, root, subset = trueHUD_bar(th, "HealthBarFrame", "HealthBarBackground", "HealthBarColor", "HealthBarOverlay", 0.8,
+                                            "5a251e", "EBEBEB", None, name_field=True)
+    n = write(os.path.join(a.out, "infobar.swf"), th, w, h, extra, root, subset)
+    print(f"{'infobar.swf':14} {w:7.1f} x {h:6.1f}  {n:7} bytes  from TrueHUD_Assets0.swf  [Frame, Phantom, Fill, Value, Value2]")
 
     hud = s("hudmenu.swf")
     w, h, extra, root, subset, keep = level_badge(hud)
