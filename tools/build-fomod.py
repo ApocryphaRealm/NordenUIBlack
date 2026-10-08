@@ -20,16 +20,49 @@ release on Nexus with credit; no uploads elsewhere.
 
     python build-fomod.py            build the package
 Env: NORDEN_SRC (extracted main archive), NORDEN_FULL_BLACK (recoloured tree), NORDEN_EXTRAS_FROM (a built flat package
-of this mod carrying the RaceMenu DIP files and the CPC screen), OUT_ROOT.
+of this mod carrying the RaceMenu DIP files and the CPC screen), OUT_ROOT (default: the mod's per-game folder in
+"7. current test builds", from the project's package-path resolver).
+
+Build switches:
+  NORDEN_INCLUDE_HPM=1      also add the HUD Position Manager widgets option (default OFF - HPM is not released yet and
+                            its page waits; 1.0.4 ships without it, the owner 2026-10-07).
+  NORDEN_ATELIER_BUILD      folder holding the theme-capable RaceMenuAtelier.dll + .pdb (default build\atelier); both
+                            must match the SHA-256 pinned below (ATELIER_*), so only the recorded build can ship.
+  NORDEN_ATELIER_THEME      the Norden Black theme.ini (default ..\RaceMenuAtelierNordenBlack\themes\norden-black.ini,
+                            the one copy of that file).
 """
-import os, re, sys, json, shutil, xml.etree.ElementTree as ET
+import os, re, sys, json, shutil, hashlib, xml.etree.ElementTree as ET
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(REPO, "build")
 SRC = os.environ.get("NORDEN_SRC", os.path.join(BUILD, "source", "main"))
 QL_SRC = os.path.join(BUILD, "source", "quickloot-beta")
 BLACK = os.environ.get("NORDEN_FULL_BLACK", os.path.join(BUILD, "full-black"))
-OUT_ROOT = os.environ.get("OUT_ROOT", os.path.join(os.path.dirname(os.path.dirname(REPO)), "7. current test builds"))
+_PROJECT = os.path.dirname(os.path.dirname(REPO))
+if os.environ.get("OUT_ROOT"):
+    OUT_ROOT = os.environ["OUT_ROOT"]
+else:
+    # rule 10 (2026-10-01): packages sit in "<stage>\<Game> - <Mod>"; the one resolver is distro-names.ps1
+    sys.path.insert(0, os.path.join(_PROJECT, ".MD", "scripts"))
+    import package_paths
+    OUT_ROOT = package_paths.package_root(package_paths.STAGE7, "Norden UI - Black", "Skyrim")
+    if not OUT_ROOT:
+        print("FAIL the package-path resolver returned no folder")
+        sys.exit(1)
+INCLUDE_HPM = os.environ.get("NORDEN_INCLUDE_HPM", "0") == "1"
+
+# RaceMenu Atelier option (1.0.4, the owner 2026-10-07). The DLL is RaceMenu Atelier (emberchain, GPL-3.0) built from
+# the public fork github.com/ApocryphaRealm/RaceMenuAtelier at commit ATELIER_COMMIT: Atelier 1.0.1 (f05e2c2) plus
+# 09df305 (Apprentice's classes and traits as their own tiles) and 370269a (optional theme.ini) - the two changes
+# emberchain listed for Atelier 1.0.2, whose own build cannot be downloaded (Nexus page removed). Built with
+#   xmake f -m releasedbg --skyrim_vr=n --cxflags=/d1trimfile:<clone dir>  &&  xmake build RaceMenuAtelier
+# from a clone at a path with no spaces; 0 build paths in the DLL, PDB recorded by bare name, pairing proven.
+ATELIER_COMMIT = "370269a27a7db642fa2964e33d8832472c7e036f"
+ATELIER_DLL_SHA256 = "f2e76736352e090e79789af498f8e3dcea07175a19408fd559cde2c9ffb23ca6"
+ATELIER_PDB_SHA256 = "ebd6b04370d380eb6d472d26ece5bd05ce8192f8b36e5ecf64ead9b54d47a890"
+ATELIER_BUILD = os.environ.get("NORDEN_ATELIER_BUILD", os.path.join(BUILD, "atelier"))
+ATELIER_THEME = os.environ.get("NORDEN_ATELIER_THEME", os.path.join(os.path.dirname(REPO), "RaceMenuAtelierNordenBlack",
+                                                                     "themes", "norden-black.ini"))
 EXTRAS_FROM = os.environ.get("NORDEN_EXTRAS_FROM", os.path.join(OUT_ROOT, "Norden UI - Black 1.0.2"))
 VERSION = open(os.path.join(REPO, "VERSION"), encoding="utf-8-sig").read().strip()
 OUT = os.path.join(OUT_ROOT, f"Norden UI - Black {VERSION} FOMOD")
@@ -154,6 +187,65 @@ extra("QuickLoot IE 4.0 BETA",
       "Norden file; otherwise leave it unticked.",
       [("file", r"Extras\QuickLoot IE 4.0 BETA\LootMenuIE.swf", r"Interface\LootMenuIE.swf")])
 
+# RaceMenu Atelier in Norden Black (the owner, 2026-10-07). Stock Atelier 1.0.0/1.0.1 cannot read a theme, so the
+# option ships the theme file AND the theme-capable Atelier DLL (see ATELIER_COMMIT). Recommended when Atelier's DLL is
+# installed; otherwise optional and unticked, as the HPM option does (a NotUsable default would lock out a player whose
+# installer cannot see a loose DLL, or who installs Atelier afterwards).
+_sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+_adll = os.path.join(ATELIER_BUILD, "RaceMenuAtelier.dll")
+_apdb = os.path.join(ATELIER_BUILD, "RaceMenuAtelier.pdb")
+for _f, _want in ((_adll, ATELIER_DLL_SHA256), (_apdb, ATELIER_PDB_SHA256)):
+    if not os.path.isfile(_f):
+        fail(f"Atelier build missing: {_f} - build {ATELIER_COMMIT[:7]} of the fork (see ATELIER_COMMIT) and copy it there")
+    if _sha(_f) != _want:
+        fail(f"{_f} is not the recorded Atelier build ({ATELIER_COMMIT[:7]}): SHA-256 {_sha(_f)} != {_want}")
+if not os.path.isfile(ATELIER_THEME):
+    fail(f"Norden Black Atelier theme missing: {ATELIER_THEME}")
+_ap = ET.SubElement(plugins, "plugin", {"name": "RaceMenu Atelier"})
+ET.SubElement(_ap, "description").text = (
+    "Only if you use RaceMenu Atelier (by emberchain). Dresses Atelier's character-creation screen in Norden UI - "
+    "Black's palette: black panels, Norden's silver lines and square corners. Requires RaceMenu Atelier. Atelier 1.0.0 "
+    "and 1.0.1 cannot read a theme, so this option also REPLACES Atelier's RaceMenuAtelier.dll with a build that reads "
+    "one: Atelier 1.0.1 with the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's classes and traits as "
+    "their own tiles, and the optional theme.ini), source at github.com/ApocryphaRealm/RaceMenuAtelier, commit "
+    + ATELIER_COMMIT[:7] + " (GPL-3.0). Give Norden UI - Black a higher priority than RaceMenu Atelier (in MO2's left "
+    "pane, below it) so this DLL wins. Atelier is emberchain's work; used with permission. Delete "
+    r"SKSE\Plugins\RaceMenuAtelier\theme.ini to get Atelier's own colours back.")
+_afs = ET.SubElement(_ap, "files")
+for _s, _d in ((r"Extras\RaceMenu Atelier\RaceMenuAtelier.dll", r"SKSE\Plugins\RaceMenuAtelier.dll"),
+               (r"Extras\RaceMenu Atelier\RaceMenuAtelier.pdb", r"SKSE\Plugins\RaceMenuAtelier.pdb"),
+               (r"Extras\RaceMenu Atelier\theme.ini", r"SKSE\Plugins\RaceMenuAtelier\theme.ini"),
+               (r"Extras\RaceMenu Atelier\RaceMenu Atelier - Norden UI - Black build.txt",
+                r"docs\RaceMenu Atelier - Norden UI - Black build.txt")):
+    ET.SubElement(_afs, "file", {"source": _s, "destination": _d, "priority": "0"})
+_atd = ET.SubElement(_ap, "typeDescriptor")
+_adt = ET.SubElement(_atd, "dependencyType")
+ET.SubElement(_adt, "defaultType", {"name": "Optional"})
+_apat = ET.SubElement(ET.SubElement(_adt, "patterns"), "pattern")
+ET.SubElement(ET.SubElement(_apat, "dependencies", {"operator": "And"}), "fileDependency",
+              {"file": r"SKSE\Plugins\RaceMenuAtelier.dll", "state": "Active"})
+ET.SubElement(_apat, "type", {"name": "Recommended"})
+ATELIER_NOTE = f"""RaceMenu Atelier - the build installed by Norden UI - Black
+
+SKSE\\Plugins\\RaceMenuAtelier.dll (and its .pdb) installed by Norden UI - Black's "RaceMenu Atelier" option is
+RaceMenu Atelier by emberchain (https://github.com/emberchain/RaceMenuAtelier), licensed GPL-3.0, modified.
+
+Corresponding source: https://github.com/ApocryphaRealm/RaceMenuAtelier/tree/{ATELIER_COMMIT}
+  = RaceMenu Atelier 1.0.1 (emberchain, f05e2c2)
+  + 09df305  Apprentice - A Class Overhaul's classes and traits get their own tiles and are picked through the menu's
+             onItemPress (never ChangeRace)
+  + 370269a  optional SKSE\\Plugins\\RaceMenuAtelier\\theme.ini: palette and corner radius
+These are the two changes emberchain lists for RaceMenu Atelier 1.0.2 (offered upstream as emberchain/RaceMenuAtelier
+pull request #1). Build: git submodule update --init --recursive; xmake f -m releasedbg --skyrim_vr=n
+--cxflags=/d1trimfile:<clone folder>; xmake build RaceMenuAtelier.
+SHA-256 RaceMenuAtelier.dll {ATELIER_DLL_SHA256}
+SHA-256 RaceMenuAtelier.pdb {ATELIER_PDB_SHA256}
+
+The licence is the GNU General Public License version 3 (LICENSE in the Norden UI - Black download,
+https://www.gnu.org/licenses/gpl-3.0.txt). theme.ini holds colour values only (the Norden UI - Black palette).
+To go back to stock Atelier, untick the option (or delete these files) and let RaceMenu Atelier's own DLL win.
+"""
+
 # HUD Position Manager's own widgets in Norden Black's look (the owner, 2026-10-04: "make it a FOMOD option if they use
 # HUD Position Manager because a lot of people aren't going to be using HUD Position Manager yet and we need to maintain
 # compatibility with the current"). Built by tools/hpm-widgets.py from the installed Norden UI - Black widget art;
@@ -161,26 +253,30 @@ extra("QuickLoot IE 4.0 BETA",
 # Recommended when HPM's DLL is installed, otherwise optional and unticked.
 HPM_WIDGETS = os.environ.get("NORDEN_HPM_WIDGETS", os.path.join(BUILD, "hpm-widgets", "Interface", "HUDPositionManager", "widgets"))
 HPM_NAMES = ("breath", "casting", "detection", "shout", "level", "level_badge", "gold", "weight", "time", "playtime", "resist", "equip", "bowdraw", "shoutcharge", "playerhealth", "playermagicka", "playerstamina", "infobar", "bossbar")
-for _n in HPM_NAMES:
-    if not os.path.exists(os.path.join(HPM_WIDGETS, _n + ".swf")):
-        fail(f"HPM widget missing: {_n}.swf - run tools/hpm-widgets.py first")
-_p = ET.SubElement(plugins, "plugin", {"name": "HUD Position Manager - its widgets in Norden Black"})
-ET.SubElement(_p, "description").text = (
-    "Only if you use HUD Position Manager (1.1 or later). HUD Position Manager builds its own HUD widgets - breath, "
-    "casting, shout cooldown, detection, level, gold, carry weight and game time. This dresses them in Norden UI - "
-    "Black's own art (the casting bar, oxygen meter and STB widget styles), instead of HUD Position Manager's plain "
-    "default look. Place Norden UI - Black above HUD Position Manager so these files win.")
-_fs = ET.SubElement(_p, "files")
-ET.SubElement(_fs, "folder", {"source": r"Extras\HUD Position Manager\widgets",
-                              "destination": r"Interface\HUDPositionManager\widgets", "priority": "0"})
-_td = ET.SubElement(_p, "typeDescriptor")
-_dt = ET.SubElement(_td, "dependencyType")
-ET.SubElement(_dt, "defaultType", {"name": "Optional"})
-_pats = ET.SubElement(_dt, "patterns")
-_pat = ET.SubElement(_pats, "pattern")
-_deps = ET.SubElement(_pat, "dependencies", {"operator": "And"})
-ET.SubElement(_deps, "fileDependency", {"file": r"SKSE\Plugins\HUDPositionManager.dll", "state": "Active"})
-ET.SubElement(_pat, "type", {"name": "Recommended"})
+if INCLUDE_HPM:
+    for _n in HPM_NAMES:
+        if not os.path.exists(os.path.join(HPM_WIDGETS, _n + ".swf")):
+            fail(f"HPM widget missing: {_n}.swf - run tools/hpm-widgets.py first")
+    _p = ET.SubElement(plugins, "plugin", {"name": "HUD Position Manager - its widgets in Norden Black"})
+    ET.SubElement(_p, "description").text = (
+        "Only if you use HUD Position Manager (1.1 or later). HUD Position Manager builds its own HUD widgets - breath, "
+        "casting, shout cooldown, detection, level, gold, carry weight and game time. This dresses them in Norden UI - "
+        "Black's own art (the casting bar, oxygen meter and STB widget styles), instead of HUD Position Manager's plain "
+        "default look. Place Norden UI - Black above HUD Position Manager so these files win.")
+    _fs = ET.SubElement(_p, "files")
+    ET.SubElement(_fs, "folder", {"source": r"Extras\HUD Position Manager\widgets",
+                                  "destination": r"Interface\HUDPositionManager\widgets", "priority": "0"})
+    _td = ET.SubElement(_p, "typeDescriptor")
+    _dt = ET.SubElement(_td, "dependencyType")
+    ET.SubElement(_dt, "defaultType", {"name": "Optional"})
+    _pats = ET.SubElement(_dt, "patterns")
+    _pat = ET.SubElement(_pats, "pattern")
+    _deps = ET.SubElement(_pat, "dependencies", {"operator": "And"})
+    ET.SubElement(_deps, "fileDependency", {"file": r"SKSE\Plugins\HUDPositionManager.dll", "state": "Active"})
+    ET.SubElement(_pat, "type", {"name": "Recommended"})
+    print("HUD Position Manager option: INCLUDED (NORDEN_INCLUDE_HPM=1)")
+else:
+    print("HUD Position Manager option: left out (set NORDEN_INCLUDE_HPM=1 to add it)")
 
 # ---- 4. the package ------------------------------------------------------------------------------------------------
 if os.path.exists(OUT):
@@ -208,7 +304,14 @@ for rel in sorted(copies):
 # automatic one; an option whose Norden file differs (another aspect ratio or style) keeps the automatic recolour and
 # is listed, so nothing tuned is silently lost.
 import hashlib
-HAND_TUNED_FROM = os.environ.get("NORDEN_HAND_TUNED", r"D:\modlists\Njordlinger\mods\unpublished Norden UI - Black")
+# 2026-10-07: the installed folder was renamed "Norden UI Black" (installed from Nexus 1.0.3); the old default no longer
+# existed and the carry-over silently did nothing, so 1.0.4's first build shipped the automatic hudmenu / tweenmenu /
+# QuestItemList. A missing folder now stops the build.
+HAND_TUNED_FROM = os.environ.get("NORDEN_HAND_TUNED") or next(
+    (p for p in (r"D:\modlists\Njordlinger\mods\Norden UI Black", r"D:\modlists\Njordlinger\mods\unpublished Norden UI - Black")
+     if os.path.isdir(p)), "")
+if not os.path.isdir(HAND_TUNED_FROM):
+    fail("hand-tuned Norden UI - Black folder not found - set NORDEN_HAND_TUNED to the installed Black mod folder")
 NORDEN_INSTALLED = os.environ.get("NORDEN_UI", r"D:\modlists\Njordlinger\mods\Norden UI")
 _h = lambda p: hashlib.sha1(open(p, "rb").read()).hexdigest()
 by_src = {}
@@ -255,14 +358,23 @@ os.makedirs(os.path.join(OUT, "Extras", "Character Progression Control"))
 shutil.copy2(cpc, os.path.join(OUT, "Extras", "Character Progression Control", "levelupmenu.swf"))
 os.makedirs(os.path.join(OUT, "Extras", "QuickLoot IE 4.0 BETA"))
 shutil.copy2(ql, os.path.join(OUT, "Extras", "QuickLoot IE 4.0 BETA", "LootMenuIE.swf"))
-os.makedirs(os.path.join(OUT, "Extras", "HUD Position Manager", "widgets"))
-for _n in HPM_NAMES:
-    shutil.copy2(os.path.join(HPM_WIDGETS, _n + ".swf"), os.path.join(OUT, "Extras", "HUD Position Manager", "widgets", _n + ".swf"))
+if INCLUDE_HPM:
+    os.makedirs(os.path.join(OUT, "Extras", "HUD Position Manager", "widgets"))
+    for _n in HPM_NAMES:
+        shutil.copy2(os.path.join(HPM_WIDGETS, _n + ".swf"), os.path.join(OUT, "Extras", "HUD Position Manager", "widgets", _n + ".swf"))
+_ao = os.path.join(OUT, "Extras", "RaceMenu Atelier")
+os.makedirs(_ao)
+shutil.copy2(_adll, os.path.join(_ao, "RaceMenuAtelier.dll"))
+shutil.copy2(_apdb, os.path.join(_ao, "RaceMenuAtelier.pdb"))
+shutil.copy2(ATELIER_THEME, os.path.join(_ao, "theme.ini"))
+open(os.path.join(_ao, "RaceMenu Atelier - Norden UI - Black build.txt"), "w", encoding="utf-8", newline="\r\n").write(ATELIER_NOTE)
+if _sha(os.path.join(_ao, "RaceMenuAtelier.dll")) != ATELIER_DLL_SHA256:
+    fail("the packaged RaceMenuAtelier.dll does not match the recorded build")
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
+# LICENSE and NOTICE come from the repo (they used to be copied from the previous release - library 7050's seeding
+# trap: a notice changed in the repo would never have reached the package)
 for f in ("LICENSE", "NOTICE.md"):
-    s = os.path.join(EXTRAS_FROM, f)
-    if os.path.exists(s):
-        shutil.copy2(s, os.path.join(OUT, f))
+    shutil.copy2(os.path.join(REPO, f), os.path.join(OUT, f))
 ET.indent(root, space="\t")
 xml = ET.tostring(root, encoding="unicode")
 open(os.path.join(OUT, "fomod", "ModuleConfig.xml"), "w", encoding="utf-16", newline="\r\n").write(xml)
@@ -279,6 +391,9 @@ _info_raw = open(os.path.join(SRC, "fomod", "info.xml"), "rb").read()
 _info = next((_info_raw.decode(e) for e in ("utf-8-sig", "utf-16", "cp1252") if _try_decode(_info_raw, e)), "")
 _m = re.search(r"<Version>\s*([0-9][0-9.]*)", _info)
 NORDEN_VERSION = _m.group(1) if _m else "?"
+HPM_README = (", HUD Position Manager's own HUD widgets (breath, casting, shout,\ndetection, level, gold, carry weight, "
+              "game time) in Norden UI - Black's art - recommended only when HUD\nPosition Manager is installed -"
+              if INCLUDE_HPM else "")
 readme = f"""Norden UI - Black {VERSION}
 
 Norden UI (by Nithog, Nexus 166086) with its panel grey taken to black - for EVERY option of Norden UI's own installer.
@@ -288,13 +403,23 @@ hover states and dividers stay distinct. Text, borders, hued accents, alpha and 
 Install: Norden UI first, then this, in a slot ABOVE Norden UI (higher priority). This installer asks the same
 questions as Norden UI's - pick the same answers. Options with nothing to recolour install nothing and leave Norden's
 own files in place. The last page offers the menus that are not Norden's loose files: RaceMenu (through the Automatic
-DIP Patcher, like Norden's own RaceMenu download), Character Progression Control's level-up screen, and Norden's
-QuickLoot IE 4.0 BETA file - and, for HUD Position Manager users, its own HUD widgets (breath, casting, shout,
-detection, level, gold, carry weight, game time) in Norden UI - Black's art. That option is recommended only when HUD
-Position Manager is installed; nothing else changes for anyone who does not use it.
+DIP Patcher, like Norden's own RaceMenu download), Character Progression Control's level-up screen, Norden's
+QuickLoot IE 4.0 BETA file{HPM_README}, and RaceMenu Atelier.
 
-Requirements: Norden UI {NORDEN_VERSION}.
+RaceMenu Atelier (optional): for players who use RaceMenu Atelier by emberchain. It dresses Atelier's screen in
+Norden UI - Black's palette (black panels, Norden's silver lines, square corners). Atelier 1.0.0 and 1.0.1 cannot read
+a theme, so the option installs SKSE\\Plugins\\RaceMenuAtelier\\theme.ini AND replaces Atelier's RaceMenuAtelier.dll
+with a build that reads it: Atelier 1.0.1 plus the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's
+classes and traits as their own tiles; the optional theme.ini). It is recommended only when RaceMenuAtelier.dll is
+installed. Give Norden UI - Black a HIGHER priority than RaceMenu Atelier - in MO2's left pane, place it BELOW RaceMenu
+Atelier - so this DLL wins. Delete theme.ini for Atelier's own colours; untick the option to go back to stock Atelier.
+RaceMenu Atelier is GPL-3.0; the source of this build is
+https://github.com/ApocryphaRealm/RaceMenuAtelier/tree/{ATELIER_COMMIT} (see NOTICE.md and
+docs\\RaceMenu Atelier - Norden UI - Black build.txt).
+
+Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu).
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.
+RaceMenu Atelier is emberchain's (GPL-3.0), modified and shipped with emberchain's permission.
 """
 open(os.path.join(OUT, "README.txt"), "w", encoding="utf-8").write(readme)
 print(f"package: {OUT}")
