@@ -50,7 +50,7 @@ RACEMENU_BSA = os.environ.get("RACEMENU_BSA", os.path.join(MODS, "RaceMenu", "Ra
 CPC_MOD = os.environ.get("CPC_MOD", os.path.join(MODS, "Character Progression Control"))
 BSARCH = os.environ.get("BSARCH", r"D:\modlists\Njordlinger\tools\BSArch\BSArch.exe")
 XDELTA = os.environ.get("XDELTA", os.path.join(MODS, "Dynamic Interface Patcher - DIP", "DIP", "xdelta", "xdelta.exe"))
-GATE = os.environ.get("SWF_COLOUR_GATE", r"D:\Claude output\.MD\scripts\swf-colour-gate.py")
+GATE = os.environ.get("SWF_COLOUR_GATE") or subprocess.run([sys.executable, r"D:\Claude output\.MD\resolvers\resolve.py", "find", "swf-colour-gate"], capture_output=True, text=True).stdout.strip()   # by role
 PATCHES = os.path.join(REPO, "dip-patches")
 
 # 1.0.1 (2026-09-22): RaceMenu's two menus are NOT shipped as finished SWFs any more. The RaceMenu team takes down
