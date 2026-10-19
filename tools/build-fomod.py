@@ -215,12 +215,12 @@ ET.SubElement(_ap, "description").text = (
     "pane, below it) so this DLL wins. Atelier is emberchain's work; used with permission. Delete "
     r"SKSE\Plugins\RaceMenuAtelier\theme.ini to get Atelier's own colours back.")
 _afs = ET.SubElement(_ap, "files")
-for _s, _d in ((r"Extras\RaceMenu Atelier\RaceMenuAtelier.dll", r"SKSE\Plugins\RaceMenuAtelier.dll"),
-               (r"Extras\RaceMenu Atelier\RaceMenuAtelier.pdb", r"SKSE\Plugins\RaceMenuAtelier.pdb"),
-               (r"Extras\RaceMenu Atelier\theme.ini", r"SKSE\Plugins\RaceMenuAtelier\theme.ini"),
-               (r"Extras\RaceMenu Atelier\RaceMenu Atelier - Norden UI - Black build.txt",
-                r"docs\RaceMenu Atelier - Norden UI - Black build.txt")):
-    ET.SubElement(_afs, "file", {"source": _s, "destination": _d, "priority": "0"})
+# The option is ONE top-level folder holding the install tree as it lands in the mod folder (SKSE\Plugins\..., docs\...),
+# installed with destination "". Why a top-level folder with no separator in its name: the package gate row
+# installed-build-is-the-package judges a FOMOD's installed DLL by flattening only such a folder
+# (the way Apocrypha Menu Framework's SMF-Name\ is flattened); a per-file mapping from Extras\RaceMenu Atelier\ to
+# SKSE\Plugins\ read as "never installed" although the install was right (2026-10-19). Installed result unchanged.
+ET.SubElement(_afs, "folder", {"source": "RaceMenu Atelier", "destination": "", "priority": "0"})
 _atd = ET.SubElement(_ap, "typeDescriptor")
 _adt = ET.SubElement(_atd, "dependencyType")
 ET.SubElement(_adt, "defaultType", {"name": "Optional"})
@@ -368,12 +368,13 @@ if INCLUDE_HPM:
     os.makedirs(os.path.join(OUT, "Extras", "HUD Position Manager", "widgets"))
     for _n in HPM_NAMES:
         shutil.copy2(os.path.join(HPM_WIDGETS, _n + ".swf"), os.path.join(OUT, "Extras", "HUD Position Manager", "widgets", _n + ".swf"))
-_ao = os.path.join(OUT, "Extras", "RaceMenu Atelier")
-os.makedirs(_ao)
+_ao = os.path.join(OUT, "RaceMenu Atelier", "SKSE", "Plugins")
+os.makedirs(os.path.join(_ao, "RaceMenuAtelier"))
+os.makedirs(os.path.join(OUT, "RaceMenu Atelier", "docs"))
 shutil.copy2(_adll, os.path.join(_ao, "RaceMenuAtelier.dll"))
 shutil.copy2(_apdb, os.path.join(_ao, "RaceMenuAtelier.pdb"))
-shutil.copy2(ATELIER_THEME, os.path.join(_ao, "theme.ini"))
-open(os.path.join(_ao, "RaceMenu Atelier - Norden UI - Black build.txt"), "w", encoding="utf-8", newline="\r\n").write(ATELIER_NOTE)
+shutil.copy2(ATELIER_THEME, os.path.join(_ao, "RaceMenuAtelier", "theme.ini"))
+open(os.path.join(OUT, "RaceMenu Atelier", "docs", "RaceMenu Atelier - Norden UI - Black build.txt"), "w", encoding="utf-8", newline="\r\n").write(ATELIER_NOTE)
 if _sha(os.path.join(_ao, "RaceMenuAtelier.dll")) != ATELIER_DLL_SHA256:
     fail("the packaged RaceMenuAtelier.dll does not match the recorded build")
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))

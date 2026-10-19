@@ -15,7 +15,9 @@ everything; a flag-only question (resolution, Wheeler) takes the answer whose la
 is installed. Files are then laid down in the installer's priority order, later overriding earlier, as MO2's
 FOMOD installer does.
 
-    python install-with-choices.py <FOMOD folder> <target mod folder> [--dry-run]
+    python install-with-choices.py <FOMOD folder> <target mod folder> [--dry-run] [--also "<option name>"]
+
+--also takes an option the installed files cannot vouch for (RaceMenu Atelier, in a build under test), by its name.
 """
 import hashlib, os, shutil, sys, configparser
 import xml.etree.ElementTree as ET
@@ -23,6 +25,7 @@ import xml.etree.ElementTree as ET
 sys.stdout.reconfigure(encoding="utf-8")
 FOMOD, TARGET = sys.argv[1], sys.argv[2]
 DRY = "--dry-run" in sys.argv
+ALSO = [sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--also"]   # options to take although no installed file vouches for them (a build under test)
 MODS = r"D:\Modlists\Njordlinger\mods"
 CUR_BLACK = os.path.join(MODS, "Norden UI Black")   # 1.0.4: the installed 1.0.3 folder (was "unpublished Norden UI - Black", renamed 2026-10-07)
 NORDEN = os.path.join(MODS, "Norden UI")
@@ -123,7 +126,7 @@ def resolve(force, verbose=False):
                 elif gtype == "SelectAtMostOne":
                     pick = [ranked[0]] if ranked[0][2] >= 0.8 else []
                 else:
-                    pick = [x for x in scored if x[2] is None or x[2] >= 0.8]
+                    pick = [x for x in scored if x[2] is None or x[2] >= 0.8 or x[0].get("name") in ALSO]
             if verbose:
                 names = {x[0].get("name") for x in pick}
                 print(f"[{st.get('name')}] {g.get('name')} ({gtype})")
