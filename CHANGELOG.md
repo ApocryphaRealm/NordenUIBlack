@@ -32,9 +32,10 @@
   emberchain) in Norden UI - Black's palette - black panels, Norden's silver #BBBDBF lines and accents, #8E9396 borders,
   square corners. Installs `SKSE\Plugins\RaceMenuAtelier\theme.ini` and, because Atelier 1.0.0 / 1.0.1 cannot read a
   theme, replaces `SKSE\Plugins\RaceMenuAtelier.dll` (+ `.pdb`) with a build that reads one: Atelier 1.0.1 plus
-  `09df305` (Apprentice - A Class Overhaul's classes and traits as their own tiles) and `370269a` (the optional theme
-  file) - the two changes emberchain lists for Atelier 1.0.2 - from github.com/ApocryphaRealm/RaceMenuAtelier at
-  `370269a` (GPL-3.0, with emberchain's permission; NOTICE.md and an installed `docs\RaceMenu Atelier - Norden UI -
+  `09df305` (Apprentice - A Class Overhaul's classes and traits as their own tiles), `370269a` (the optional theme
+  file) - the two changes emberchain lists for Atelier 1.0.2 - and `62b288c` (the log level, `uLogLevel = 2`, read
+  from that theme file) from github.com/ApocryphaRealm/RaceMenuAtelierPatch at
+  `62b288c` (GPL-3.0, with emberchain's permission; NOTICE.md and an installed `docs\RaceMenu Atelier - Norden UI -
   Black build.txt` carry the notice and the source pointer). Recommended when RaceMenuAtelier.dll is installed,
   otherwise optional and unticked. Norden UI - Black must have a higher priority than RaceMenu Atelier (in MO2's left
   pane, below it). Nothing else in the package changed: every other file is byte-identical to 1.0.3.

@@ -52,14 +52,17 @@ else:
 INCLUDE_HPM = os.environ.get("NORDEN_INCLUDE_HPM", "0") == "1"
 
 # RaceMenu Atelier option (1.0.4, the owner 2026-10-07). The DLL is RaceMenu Atelier (emberchain, GPL-3.0) built from
-# the public fork github.com/ApocryphaRealm/RaceMenuAtelier at commit ATELIER_COMMIT: Atelier 1.0.1 (f05e2c2) plus
-# 09df305 (Apprentice's classes and traits as their own tiles) and 370269a (optional theme.ini) - the two changes
+# the public repository github.com/ApocryphaRealm/RaceMenuAtelierPatch (branch upstream-apprentice) at commit
+# ATELIER_COMMIT: Atelier 1.0.1 (f05e2c2) plus 09df305 (Apprentice's classes and traits as their own tiles), 370269a
+# (optional theme.ini) and 62b288c (uLogLevel read from that theme.ini, so the shipped INI carries the log level) - the first two changes
 # emberchain listed for Atelier 1.0.2, whose own build cannot be downloaded (Nexus page removed). Built with
 #   xmake f -m releasedbg --skyrim_vr=n --cxflags=/d1trimfile:<clone dir>  &&  xmake build RaceMenuAtelier
-# from a clone at a path with no spaces; 0 build paths in the DLL, PDB recorded by bare name, pairing proven.
-ATELIER_COMMIT = "370269a27a7db642fa2964e33d8832472c7e036f"
-ATELIER_DLL_SHA256 = "f2e76736352e090e79789af498f8e3dcea07175a19408fd559cde2c9ffb23ca6"
-ATELIER_PDB_SHA256 = "ebd6b04370d380eb6d472d26ece5bd05ce8192f8b36e5ecf64ead9b54d47a890"
+# from a clone at a path with no spaces, inside the shared build environment (MODS_BUILD_ENV); 0 build paths and 0 user
+# folders in the DLL and the PDB, PDB recorded by bare name, pairing proven. Rebuilt 2026-10-19 from a clean build tree
+# (the 2026-10-07 build's PDB carried the user folder; link.exe keeps an old PDB's records).
+ATELIER_COMMIT = "62b288c74f9fa26ae05dcf9dd41b8df084e9990a"
+ATELIER_DLL_SHA256 = "585c1707475bb7f4ca507ef1fb0cfbdeae6946fb1ebd6c4b968c4ac22d2fb8d0"
+ATELIER_PDB_SHA256 = "15c2519732dd57181e43c3a99d0e54c3d6ef17f52de237ad7fd2b40fb481c8cc"
 ATELIER_BUILD = os.environ.get("NORDEN_ATELIER_BUILD", os.path.join(BUILD, "atelier"))
 ATELIER_THEME = os.environ.get("NORDEN_ATELIER_THEME", os.path.join(os.path.dirname(REPO), "RaceMenuAtelierNordenBlack",
                                                                      "themes", "norden-black.ini"))
@@ -207,7 +210,7 @@ ET.SubElement(_ap, "description").text = (
     "Black's palette: black panels, Norden's silver lines and square corners. Requires RaceMenu Atelier. Atelier 1.0.0 "
     "and 1.0.1 cannot read a theme, so this option also REPLACES Atelier's RaceMenuAtelier.dll with a build that reads "
     "one: Atelier 1.0.1 with the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's classes and traits as "
-    "their own tiles, and the optional theme.ini), source at github.com/ApocryphaRealm/RaceMenuAtelier, commit "
+    "their own tiles, and the optional theme.ini) and a log level read from that theme file, source at github.com/ApocryphaRealm/RaceMenuAtelierPatch, commit "
     + ATELIER_COMMIT[:7] + " (GPL-3.0). Give Norden UI - Black a higher priority than RaceMenu Atelier (in MO2's left "
     "pane, below it) so this DLL wins. Atelier is emberchain's work; used with permission. Delete "
     r"SKSE\Plugins\RaceMenuAtelier\theme.ini to get Atelier's own colours back.")
@@ -230,19 +233,20 @@ ATELIER_NOTE = f"""RaceMenu Atelier - the build installed by Norden UI - Black
 SKSE\\Plugins\\RaceMenuAtelier.dll (and its .pdb) installed by Norden UI - Black's "RaceMenu Atelier" option is
 RaceMenu Atelier by emberchain (https://github.com/emberchain/RaceMenuAtelier), licensed GPL-3.0, modified.
 
-Corresponding source: https://github.com/ApocryphaRealm/RaceMenuAtelier/tree/{ATELIER_COMMIT}
+Corresponding source: https://github.com/ApocryphaRealm/RaceMenuAtelierPatch/tree/{ATELIER_COMMIT}
   = RaceMenu Atelier 1.0.1 (emberchain, f05e2c2)
   + 09df305  Apprentice - A Class Overhaul's classes and traits get their own tiles and are picked through the menu's
              onItemPress (never ChangeRace)
   + 370269a  optional SKSE\\Plugins\\RaceMenuAtelier\\theme.ini: palette and corner radius
-These are the two changes emberchain lists for RaceMenu Atelier 1.0.2 (offered upstream as emberchain/RaceMenuAtelier
-pull request #1). Build: git submodule update --init --recursive; xmake f -m releasedbg --skyrim_vr=n
+  + 62b288c  uLogLevel in that theme.ini sets the log's verbosity (2 = info, the shipped value)
+The first two are the changes emberchain lists for RaceMenu Atelier 1.0.2 (offered upstream as
+emberchain/RaceMenuAtelier pull request #1); the third only adds the log level. Build: git submodule update --init --recursive; xmake f -m releasedbg --skyrim_vr=n
 --cxflags=/d1trimfile:<clone folder>; xmake build RaceMenuAtelier.
 SHA-256 RaceMenuAtelier.dll {ATELIER_DLL_SHA256}
 SHA-256 RaceMenuAtelier.pdb {ATELIER_PDB_SHA256}
 
 The licence is the GNU General Public License version 3 (LICENSE in the Norden UI - Black download,
-https://www.gnu.org/licenses/gpl-3.0.txt). theme.ini holds colour values only (the Norden UI - Black palette).
+https://www.gnu.org/licenses/gpl-3.0.txt). theme.ini holds the Norden UI - Black palette and the log level.
 To go back to stock Atelier, untick the option (or delete these files) and let RaceMenu Atelier's own DLL win.
 """
 
@@ -416,7 +420,7 @@ classes and traits as their own tiles; the optional theme.ini). It is recommende
 installed. Give Norden UI - Black a HIGHER priority than RaceMenu Atelier - in MO2's left pane, place it BELOW RaceMenu
 Atelier - so this DLL wins. Delete theme.ini for Atelier's own colours; untick the option to go back to stock Atelier.
 RaceMenu Atelier is GPL-3.0; the source of this build is
-https://github.com/ApocryphaRealm/RaceMenuAtelier/tree/{ATELIER_COMMIT} (see NOTICE.md and
+https://github.com/ApocryphaRealm/RaceMenuAtelierPatch/tree/{ATELIER_COMMIT} (see NOTICE.md and
 docs\\RaceMenu Atelier - Norden UI - Black build.txt).
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu).

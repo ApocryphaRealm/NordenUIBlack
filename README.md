@@ -37,12 +37,13 @@ For players of [RaceMenu Atelier](https://www.nexusmods.com/skyrimspecialedition
 dresses Atelier's screen in Norden UI - Black's palette. Atelier 1.0.0 and 1.0.1 cannot read a theme, so the option
 installs two things:
 
-- `SKSE\Plugins\RaceMenuAtelier\theme.ini` - colour values and corner radius only, read from the one copy in
+- `SKSE\Plugins\RaceMenuAtelier\theme.ini` - colour values, corner radius and the log level (`uLogLevel = 2`, info), read from the one copy in
   `..\RaceMenuAtelierNordenBlack\themes\norden-black.ini`;
 - `SKSE\Plugins\RaceMenuAtelier.dll` + `.pdb`, **replacing Atelier's DLL** with a build that reads the theme: Atelier
-  1.0.1 plus our two commits (`09df305` Apprentice classes and traits as their own tiles, `370269a` the theme file) -
-  the two changes emberchain lists for Atelier 1.0.2 - from the public fork
-  [ApocryphaRealm/RaceMenuAtelier @ 370269a](https://github.com/ApocryphaRealm/RaceMenuAtelier/tree/370269a27a7db642fa2964e33d8832472c7e036f).
+  1.0.1 plus our three commits (`09df305` Apprentice classes and traits as their own tiles, `370269a` the theme file,
+  `62b288c` the log level read from it) - the first two are the changes emberchain lists for Atelier 1.0.2 - from the
+  public repository
+  [ApocryphaRealm/RaceMenuAtelierPatch @ 62b288c](https://github.com/ApocryphaRealm/RaceMenuAtelierPatch/tree/62b288c74f9fa26ae05dcf9dd41b8df084e9990a).
   `build-fomod.py` takes it from `build\atelier\` (or `NORDEN_ATELIER_BUILD`) and refuses any file whose SHA-256 is not
   the recorded build's.
 
