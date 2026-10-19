@@ -39,6 +39,14 @@
   otherwise optional and unticked. Norden UI - Black must have a higher priority than RaceMenu Atelier (in MO2's left
   pane, below it). Nothing else in the package changed: every other file is byte-identical to 1.0.3.
 
+### Fixed
+- **The dialogue box is black now** (a player's report, 2026-10-08: the conversation box still showed Norden's colour).
+  Norden's dialogue menu draws its selected-topic box in Norden's slate (42,52,57 and 91,103,109). The recolour rule
+  only darkens neutral greys, so that slate was never touched and the box kept its original colour. A new build step,
+  tools/recolour-dialogue.py, applies the same darkening rule to the slate colours of the dialogue movies and nothing
+  else: dialoguemenu.swf in all three Norden variants (16x9, 21x9, Smart Talk DBVO) and the deardiary_dm dialoguemenu
+  pieces. Alpha is unchanged, so the box fades as before; other menus keep their slate selection colour as in 1.0.3.
+
 ### Fixed (build only)
 - build-fomod.py's hand-tuned carry-over (tween menu, hudmenu, QuestItemList) looked for the installed Black folder
   under its old name and silently carried nothing; it finds "Norden UI Black" now and stops when no folder is found.

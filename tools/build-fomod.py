@@ -4,7 +4,7 @@ r"""Assemble the FULL "Norden UI - Black" as a FOMOD that mirrors Norden UI's ow
 Norden UI (Nexus 166086, by Nithog) installs through a FOMOD of 18 steps / 92 groups / 251 options. This build recolours
 EVERY option's SWFs and Wheeler SVGs with the rule in recolour.py / recolour-svg.py (export-xml.py, recolour.py --build
 and recolour-svg.py --write run first, with NORDEN_XML / NORDEN_XML_BLACK / NORDEN_BLACK / NORDEN_SVG_ALL pointed at
-build\full-*), then this script:
+build\full-*), then recolour-dialogue.py --build (1.0.4: the dialogue box's slate), then this script:
 
   1. applies the current build's moreHUD layout (inventory widget right-aligned at 98 %) to both resolutions' presets;
   2. rewrites Norden's ModuleConfig.xml: every step, group, option, flag, condition and image is kept - so a player makes
@@ -328,6 +328,8 @@ if os.path.isdir(HAND_TUNED_FROM):
                 continue
             hand = os.path.join(dp, f)
             rel = os.path.relpath(hand, HAND_TUNED_FROM)
+            if "dialoguemenu" in rel.lower():
+                continue   # 1.0.4: re-recoloured by recolour-dialogue.py; the installed 1.0.3 copy has the unrecoloured slate box
             orig = os.path.join(NORDEN_INSTALLED, rel)
             if not os.path.exists(orig):
                 continue
