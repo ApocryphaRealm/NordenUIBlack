@@ -39,7 +39,7 @@ emberchain's permission, and emberchain is its author; nothing of RaceMenu (expi
   log level, `uLogLevel`, read from that same file). The first two are the changes emberchain lists for RaceMenu
   Atelier 1.0.2; they were offered upstream as emberchain/RaceMenuAtelier pull request #1.
 - **Corresponding source:**
-  [github.com/ApocryphaRealm/RaceMenuAtelierPatch, commit 62b288c74f9fa26ae05dcf9dd41b8df084e9990a](https://github.com/ApocryphaRealm/RaceMenuAtelierPatch/tree/62b288c74f9fa26ae05dcf9dd41b8df084e9990a)
+  RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit 62b288c74f9fa26ae05dcf9dd41b8df084e9990a
   (branch `upstream-apprentice`, upstream history kept). Build: `git submodule update --init --recursive`,
   `xmake f -m releasedbg --skyrim_vr=n --cxflags=/d1trimfile:<clone folder>`, `xmake build RaceMenuAtelier`.
 - **SHA-256:** DLL `585c1707475bb7f4ca507ef1fb0cfbdeae6946fb1ebd6c4b968c4ac22d2fb8d0`, PDB

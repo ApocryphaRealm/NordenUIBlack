@@ -52,7 +52,7 @@ else:
 INCLUDE_HPM = os.environ.get("NORDEN_INCLUDE_HPM", "0") == "1"
 
 # RaceMenu Atelier option (1.0.4, the owner 2026-10-07). The DLL is RaceMenu Atelier (emberchain, GPL-3.0) built from
-# the public repository github.com/ApocryphaRealm/RaceMenuAtelierPatch (branch upstream-apprentice) at commit
+# a patched build (branch upstream-apprentice) at commit
 # ATELIER_COMMIT: Atelier 1.0.1 (f05e2c2) plus 09df305 (Apprentice's classes and traits as their own tiles), 370269a
 # (optional theme.ini) and 62b288c (uLogLevel read from that theme.ini, so the shipped INI carries the log level) - the first two changes
 # emberchain listed for Atelier 1.0.2, whose own build cannot be downloaded (Nexus page removed). Built with
@@ -210,7 +210,7 @@ ET.SubElement(_ap, "description").text = (
     "Black's palette: black panels, Norden's silver lines and square corners. Requires RaceMenu Atelier. Atelier 1.0.0 "
     "and 1.0.1 cannot read a theme, so this option also REPLACES Atelier's RaceMenuAtelier.dll with a build that reads "
     "one: Atelier 1.0.1 with the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's classes and traits as "
-    "their own tiles, and the optional theme.ini) and a log level read from that theme file, source at github.com/ApocryphaRealm/RaceMenuAtelierPatch, commit "
+    "their own tiles, and the optional theme.ini) and a log level read from that theme file, RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit "
     + ATELIER_COMMIT[:7] + " (GPL-3.0). Give Norden UI - Black a higher priority than RaceMenu Atelier (in MO2's left "
     "pane, below it) so this DLL wins. Atelier is emberchain's work; used with permission. Delete "
     r"SKSE\Plugins\RaceMenuAtelier\theme.ini to get Atelier's own colours back.")
@@ -233,7 +233,7 @@ ATELIER_NOTE = f"""RaceMenu Atelier - the build installed by Norden UI - Black
 SKSE\\Plugins\\RaceMenuAtelier.dll (and its .pdb) installed by Norden UI - Black's "RaceMenu Atelier" option is
 RaceMenu Atelier by emberchain (https://github.com/emberchain/RaceMenuAtelier), licensed GPL-3.0, modified.
 
-Corresponding source: https://github.com/ApocryphaRealm/RaceMenuAtelierPatch/tree/{ATELIER_COMMIT}
+RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]}
   = RaceMenu Atelier 1.0.1 (emberchain, f05e2c2)
   + 09df305  Apprentice - A Class Overhaul's classes and traits get their own tiles and are picked through the menu's
              onItemPress (never ChangeRace)
@@ -420,8 +420,7 @@ with a build that reads it: Atelier 1.0.1 plus the two changes of Atelier 1.0.2 
 classes and traits as their own tiles; the optional theme.ini). It is recommended only when RaceMenuAtelier.dll is
 installed. Give Norden UI - Black a HIGHER priority than RaceMenu Atelier - in MO2's left pane, place it BELOW RaceMenu
 Atelier - so this DLL wins. Delete theme.ini for Atelier's own colours; untick the option to go back to stock Atelier.
-RaceMenu Atelier is GPL-3.0; the source of this build is
-https://github.com/ApocryphaRealm/RaceMenuAtelierPatch/tree/{ATELIER_COMMIT} (see NOTICE.md and
+RaceMenu Atelier is GPL-3.0; the build is RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]} (see NOTICE.md and
 docs\\RaceMenu Atelier - Norden UI - Black build.txt).
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu).
