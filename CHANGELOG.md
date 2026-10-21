@@ -40,6 +40,16 @@
     stays at the bottom of the screen when the drawer opens (the drawer opens above it; the drawer's room is one tab
     height smaller) instead of riding the drawer's top edge. Inventory Reforged's own gamepad navigation (right stick
     click, D-pad, A, B, X) is left as it is - the owner tested it and wants no change.
+    A third change (the owner, 2026-10-21: "the items card, which while using Norden UI would normally be locked in
+    position below the inventory list, is now moving up and down"): stock Inventory Reforged moves and rescales the
+    SkyUI/Norden item card with its own window (DoAction_18: sizeWindow sets the card's y scale to the window width,
+    windowUnits its x scale, placeWindow its _x and _y so it follows the selected row and flips above or below, and the
+    window height reserves the card's bounds), so the card text shrank, slid up and down and overlapped the top rows
+    when the window opened above; it is also why Norden's card text showed at the left, outside the window. Our edits
+    never touched it. The option now redefines those four functions (in DoAction_22, a later tag, so they win) without
+    the card lines and with a fixed 150-unit room instead of the card's bounds: Norden's card stays where the skin puts
+    it (below the list in the Slimventory layout) at its own size, and the item window still follows the row. Inventory
+    Reforged's kind line (bQuietTags) is left as it is (the owner).
     changed. Permission: Inventory Reforged's page allows changing any part of the mod
     (extras/inventory-reforged/PERMISSIONS.txt).
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own

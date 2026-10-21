@@ -121,6 +121,38 @@ EDITS_21 = [
 ]
 
 
+# Functions of DoAction_18 that move or rescale the SkyUI/Norden item card with Inventory Reforged's window. They are
+# copied from the original with those lines taken out and redefined in DoAction_22 (a later tag, so the new definition
+# wins; DoAction_18 itself cannot be re-imported - its decompiled loops carry labels the compiler rejects).
+# The card then stays where the skin puts it (Norden's Slimventory layout: below the item list) at its own size, and the
+# window reserves a fixed room (CARD_ROOM stage units) where the card used to be, which the item preview now uses.
+CARD_ROOM = "150"
+CARD_FUNCTIONS = [
+    ("sizeWindow", [("   card._yscale = window.wide / Equipment.cardWidth() * 100;\n", "")]),
+    ("windowUnits", [("   card._xscale = card._yscale * across / Equipment.squash;\n", "")]),
+    ("placeWindow", [("   card._x = at.x;\n   card._y = at.y;\n", "")]),
+    ("cardSpan", None),
+]
+
+
+def card_functions(source):
+    out = ""
+    for name, edits in CARD_FUNCTIONS:
+        head = "Equipment." + name + " = function("
+        i = source.index(head)
+        j = source.index("\n};\n", i) + 4
+        body = source[i:j]
+        if edits is None:
+            body = "Equipment.cardSpan = function()\n{\n   return {top:0,bottom:Equipment.CARD_ROOM};\n};\n"
+        else:
+            for old, new in edits:
+                if body.count(old) != 1:
+                    sys.exit(f"FAIL {name}: edit target not there exactly once: {old[:60]!r}")
+                body = body.replace(old, new)
+        out += body
+    return "Equipment.CARD_ROOM = " + CARD_ROOM + ";\n" + out
+
+
 def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
 
@@ -152,6 +184,8 @@ def main():
                 if text.count(old) != 1:
                     sys.exit(f"FAIL an edit target in {name} is not there exactly once: {old[:70]!r}")
                 text = text.replace(old, new)
+            if name == "DoAction_22":
+                tail = tail + card_functions(open(os.path.join(tmp, "as_a", "scripts", "frame_1", "DoAction_18.as"), encoding="utf-8").read().replace("\r\n", "\n"))
             text = text.rstrip("\n") + "\n" + tail
             open(os.path.join(imp, name + ".as"), "w", encoding="utf-8", newline="\n").write(text)
         out_swf = os.path.join(tmp, "panel_patched.swf")
@@ -173,7 +207,7 @@ def main():
                        'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
             if needle not in got:
                 sys.exit(f"FAIL the patched script lacks: {needle}")
-        for name, needle in (("DoAction_21", "tab._y = 0;"),):
+        for name, needle in (("DoAction_21", "tab._y = 0;"), ("DoAction_22", "return {top:0,bottom:Equipment.CARD_ROOM};")):
             if needle not in open(os.path.join(tmp, "as_b", "scripts", "frame_1", name + ".as"), encoding="utf-8").read():
                 sys.exit(f"FAIL {name} lacks: {needle}")
         os.makedirs(a.out, exist_ok=True)
