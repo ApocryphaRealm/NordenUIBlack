@@ -293,7 +293,7 @@ ET.SubElement(ET.SubElement(_irq, "typeDescriptor"), "type", {"name": "Optional"
 IR_PANEL = os.path.join(BUILD, "ir-panel", "Interface", "InventoryReforged", "panel.swf")   # tools/ir-preview-patch.py
 if not os.path.isfile(IR_PANEL):
     fail(f"patched Inventory Reforged panel.swf missing: {IR_PANEL} - run tools/ir-preview-patch.py first")
-_irl = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - panel fixes: item preview, controller, Character button (Inventory Reforged 1.2.4 only)"})
+_irl = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - panel fixes: item preview and Character button (Inventory Reforged 1.2.4 only)"})
 ET.SubElement(_irl, "description").text = (
     "Only for Inventory Reforged for SkyUI 1.2.4 (Nexus 195826), and only if the 3D item in its item window is small, "
     "sits high in a tall black panel or leaves the window. Under Norden UI the item window is taller than the box "
@@ -304,10 +304,8 @@ ET.SubElement(_irl, "description").text = (
     "settings popup (the cog) has an ITEM PREVIEW section - Size, Sideways, Up and down, Reset size and place - kept in "
     "the same three saved numbers as the character's (60 to 140 percent, plus or minus 40 percent), so they are "
     "remembered. With the character on, those numbers belong to the character again and the item uses the defaults. "
-    "Two more changes ride in the same file, since a mod folder can hold only one panel.swf: on a gamepad, D-pad Right "
-    "on the last category now enters the equipment slots (the right stick click still does too) and D-pad Left in the "
-    "first column of slots goes back to the item list; and the CHARACTER button stays at the bottom of the screen when the "
-    "Character drawer opens - the drawer opens above it. "
+    "One more change rides in the same file, since a mod folder can hold only one panel.swf: the CHARACTER button stays "
+    "at the bottom of the screen when the Character drawer opens - the drawer opens above it. "
     "Inventory Reforged's page allows changing any part of the mod; credit: Inventory Reforged for SkyUI. The file "
     "belongs to version 1.2.4: untick this option (or delete the file) after updating Inventory Reforged. Works best "
     "with SkyUI's 3D item scale at 1.5 and offsets 0 (or the 'item preview size' option). Give Norden UI - Black a "
@@ -467,12 +465,11 @@ shutil.copy2(IR_PANEL, os.path.join(_irl_dir, "panel.swf"))
 os.makedirs(os.path.join(OUT, "Inventory Reforged larger preview", "docs"))
 open(os.path.join(OUT, "Inventory Reforged larger preview", "docs", "Inventory Reforged panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(
     "Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"panel fixes\" option is\n"
-    "panel.swf of Inventory Reforged for SkyUI 1.2.4 (Nexus 195826) with THREE scripts changed (DoAction_21, 22, 25): Equipment.aimPreview\n"
+    "panel.swf of Inventory Reforged for SkyUI 1.2.4 (Nexus 195826) with TWO scripts changed (DoAction_21, 22): Equipment.aimPreview\n"
     "is replaced - the 3D item is aimed at the middle of the whole part of the item window above its stats and sized to\n"
     "min(area, window width) x fit (0.95 weapons and ammo, 1.1 the rest) x the player's size - and the settings popup\n"
     "gets an ITEM PREVIEW section (Size, Sideways, Up and down, Reset) when the character is switched off, using the\n"
-    "saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]). DoAction_25 (gamepad panel):\n"
-    "D-pad Right on the last category enters the slots, D-pad Left in the first column returns to the list.\n"
+    "saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]).\n"
     "DoAction_21 (Character drawer): the CHARACTER tab stays at the bottom, the drawer opens above it.\n"
     "Inventory Reforged's page allows\n"
     "changing and including any part of the mod without asking; credit: Inventory Reforged for SkyUI.\n"
@@ -529,7 +526,7 @@ parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the re
 so it is black under Norden UI - Black. The option is that mod's own default settings file with only those two colours
 changed (SKSE\\Plugins\\InventoryReforged.ini) - no art or code of Inventory Reforged. Its menu settings still win. A second,
 unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
-Inventory Reforged's item window is small. A third, unticked choice, "panel fixes" (Inventory Reforged 1.2.4 only), replaces its panel.swf with a copy where three scripts changed: the item preview, the gamepad entry to the slots and the Character button staying at the bottom (allowed by that mod's page).
+Inventory Reforged's item window is small. A third, unticked choice, "panel fixes" (Inventory Reforged 1.2.4 only), replaces its panel.swf with a copy where two scripts changed: the item preview and the Character button staying at the bottom (allowed by that mod's page).
 Give Norden UI - Black a higher priority than Inventory Reforged.
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.

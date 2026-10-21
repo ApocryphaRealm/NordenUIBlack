@@ -120,54 +120,6 @@ EDITS_21 = [
 """),
 ]
 
-# DoAction_25 (the gamepad panel): D-pad Right on the last category enters the slots; Left in the first column returns.
-EDITS_25 = [
-    ("""      var taken = Equipment.padInput(details) || this.padHandleInput(details,pathToFocus);
-      Equipment.padTurns();
-      return taken;
-""", """      var before = this.inventoryLists.categoryList.selectedIndex;
-      var mine = Equipment.padInput(details);
-      var taken = mine || this.padHandleInput(details,pathToFocus);
-      if(!mine)
-      {
-         Equipment.padEdge(details,before);
-      }
-      Equipment.padTurns();
-      return taken;
-"""),
-    ("""Equipment.padMove = function(way)
-{
-""", """Equipment.padMove = function(way)
-{
-   if(way == "left" && Equipment.padFocus.kind == "slot" && Equipment.padFocus.column == 0)
-   {
-      Equipment.leavePad(true);
-      return undefined;
-   }
-"""),
-]
-NEW_25 = '''
-Equipment.padEdge = function(details, before)
-{
-   var lists = Equipment.menu.inventoryLists;
-   if(Equipment.padFocus != undefined || Equipment.inspecting || Equipment.browsing || !Equipment.padReady())
-   {
-      return undefined;
-   }
-   if(details.value != "keyDown" || details.navEquivalent != gfx.ui.NavigationCode.RIGHT || !Shared.GlobalFunc.IsKeyPressed(details))
-   {
-      return undefined;
-   }
-   if(lists.categoryList.selectedIndex == before && Equipment.listsAnswer())
-   {
-      Equipment.enterPad();
-      Equipment.padEating = {nav:details.navEquivalent,code:details.skseKeycode};
-      Equipment.padMark();
-      Equipment.padTurns();
-   }
-};
-'''
-
 
 def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
@@ -194,7 +146,7 @@ def main():
         shutil.copy2(a.src, orig)
         ff("-export", "script", os.path.join(tmp, "as_a"), orig)
         imp = os.path.join(tmp, "imp", "scripts", "frame_1"); os.makedirs(imp)
-        for name, edits, tail in (("DoAction_22", EDITS_22, NEW_FUNCTIONS), ("DoAction_21", EDITS_21, ""), ("DoAction_25", EDITS_25, NEW_25)):
+        for name, edits, tail in (("DoAction_22", EDITS_22, NEW_FUNCTIONS), ("DoAction_21", EDITS_21, "")):
             text = open(os.path.join(tmp, "as_a", "scripts", "frame_1", name + ".as"), encoding="utf-8").read().replace("\r\n", "\n")
             for old, new in edits:
                 if text.count(old) != 1:
@@ -214,20 +166,19 @@ def main():
                 pb = os.path.join(tmp, "as_b", os.path.relpath(pa, os.path.join(tmp, "as_a")))
                 if open(pa, encoding="utf-8").read() != open(pb, encoding="utf-8").read():
                     diffs.append(f)
-        if sorted(diffs) != ["DoAction_21.as", "DoAction_22.as", "DoAction_25.as"]:
-            sys.exit(f"FAIL scripts that differ: {diffs} (only DoAction_21, 22 and 25 may)")
+        if sorted(diffs) != ["DoAction_21.as", "DoAction_22.as"]:
+            sys.exit(f"FAIL scripts that differ: {diffs} (only DoAction_21 and 22 may)")
         got = open(os.path.join(tmp, "as_b", "scripts", "frame_1", "DoAction_22.as"), encoding="utf-8").read()
         for needle in ("Equipment.aimPreview = function()", "Equipment.previewTune = function()",
                        'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
             if needle not in got:
                 sys.exit(f"FAIL the patched script lacks: {needle}")
-        for name, needle in (("DoAction_21", "tab._y = 0;"), ("DoAction_25", "Equipment.padEdge = function(details, before)"),
-                             ("DoAction_25", "Equipment.leavePad(true);")):
+        for name, needle in (("DoAction_21", "tab._y = 0;"),):
             if needle not in open(os.path.join(tmp, "as_b", "scripts", "frame_1", name + ".as"), encoding="utf-8").read():
                 sys.exit(f"FAIL {name} lacks: {needle}")
         os.makedirs(a.out, exist_ok=True)
         shutil.copy2(out_swf, os.path.join(a.out, "panel.swf"))
-        print(f"ok  {os.path.join(a.out, 'panel.swf')}  sha256 {sha(out_swf)}  (only DoAction_21, 22 and 25 differ)")
+        print(f"ok  {os.path.join(a.out, 'panel.swf')}  sha256 {sha(out_swf)}  (only DoAction_21 and 22 differ)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
