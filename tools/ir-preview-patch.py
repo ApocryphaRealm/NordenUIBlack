@@ -69,7 +69,7 @@ Equipment.aimPreview = function()
 '''
 
 # (old, new) - each old text must occur exactly once in DoAction_22.as
-EDITS = [
+EDITS_22 = [
     ('''   y += Equipment.lookCheck(sheet,"doll",Equipment.say("Show the character"),undefined,pad,y,inner,Equipment.LOOK_LINE);
 ''', '''   y += Equipment.lookCheck(sheet,"doll",Equipment.say("Show the character"),undefined,pad,y,inner,Equipment.LOOK_LINE);
    if(Equipment.settings.doll != true)
@@ -108,6 +108,66 @@ Equipment.flipLook = function(key)'''),
 '''),
 ]
 
+# DoAction_21 (the Character drawer): its tab stays at the bottom of the screen; the drawer opens above it.
+EDITS_21 = [
+    ("""   drawer._y = Math.round(stage._y + stage.touch._height);
+   drawer.room = stage.touch._height - Equipment.HERO_TAB_HIGH - Equipment.HERO_INSET;
+""", """   drawer._y = Math.round(stage._y + stage.touch._height) - Equipment.HERO_TAB_HIGH;
+   drawer.room = stage.touch._height - 2 * Equipment.HERO_TAB_HIGH - Equipment.HERO_INSET;
+"""),
+    ("""   tab._y = Math.round(- drawer.high - high + (out ? 1 : 0));
+""", """   tab._y = 0;
+"""),
+]
+
+# DoAction_25 (the gamepad panel): D-pad Right on the last category enters the slots; Left in the first column returns.
+EDITS_25 = [
+    ("""      var taken = Equipment.padInput(details) || this.padHandleInput(details,pathToFocus);
+      Equipment.padTurns();
+      return taken;
+""", """      var before = this.inventoryLists.categoryList.selectedIndex;
+      var mine = Equipment.padInput(details);
+      var taken = mine || this.padHandleInput(details,pathToFocus);
+      if(!mine)
+      {
+         Equipment.padEdge(details,before);
+      }
+      Equipment.padTurns();
+      return taken;
+"""),
+    ("""Equipment.padMove = function(way)
+{
+""", """Equipment.padMove = function(way)
+{
+   if(way == "left" && Equipment.padFocus.kind == "slot" && Equipment.padFocus.column == 0)
+   {
+      Equipment.leavePad(true);
+      return undefined;
+   }
+"""),
+]
+NEW_25 = '''
+Equipment.padEdge = function(details, before)
+{
+   var lists = Equipment.menu.inventoryLists;
+   if(Equipment.padFocus != undefined || Equipment.inspecting || Equipment.browsing || !Equipment.padReady())
+   {
+      return undefined;
+   }
+   if(details.value != "keyDown" || details.navEquivalent != gfx.ui.NavigationCode.RIGHT || !Shared.GlobalFunc.IsKeyPressed(details))
+   {
+      return undefined;
+   }
+   if(lists.categoryList.selectedIndex == before && Equipment.listsAnswer())
+   {
+      Equipment.enterPad();
+      Equipment.padEating = {nav:details.navEquivalent,code:details.skseKeycode};
+      Equipment.padMark();
+      Equipment.padTurns();
+   }
+};
+'''
+
 
 def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
@@ -133,14 +193,15 @@ def main():
         orig = os.path.join(work, "panel.swf")
         shutil.copy2(a.src, orig)
         ff("-export", "script", os.path.join(tmp, "as_a"), orig)
-        text = open(os.path.join(tmp, "as_a", "scripts", "frame_1", "DoAction_22.as"), encoding="utf-8").read().replace("\r\n", "\n")
-        for old, new in EDITS:
-            if text.count(old) != 1:
-                sys.exit(f"FAIL an edit target is not there exactly once: {old[:70]!r}")
-            text = text.replace(old, new)
-        text = text.rstrip("\n") + "\n" + NEW_FUNCTIONS
         imp = os.path.join(tmp, "imp", "scripts", "frame_1"); os.makedirs(imp)
-        open(os.path.join(imp, "DoAction_22.as"), "w", encoding="utf-8", newline="\n").write(text)
+        for name, edits, tail in (("DoAction_22", EDITS_22, NEW_FUNCTIONS), ("DoAction_21", EDITS_21, ""), ("DoAction_25", EDITS_25, NEW_25)):
+            text = open(os.path.join(tmp, "as_a", "scripts", "frame_1", name + ".as"), encoding="utf-8").read().replace("\r\n", "\n")
+            for old, new in edits:
+                if text.count(old) != 1:
+                    sys.exit(f"FAIL an edit target in {name} is not there exactly once: {old[:70]!r}")
+                text = text.replace(old, new)
+            text = text.rstrip("\n") + "\n" + tail
+            open(os.path.join(imp, name + ".as"), "w", encoding="utf-8", newline="\n").write(text)
         out_swf = os.path.join(tmp, "panel_patched.swf")
         r = ff("-importScript", orig, out_swf, os.path.join(tmp, "imp", "scripts"))
         if not os.path.isfile(out_swf) or "SEVERE" in r.stdout + r.stderr:
@@ -153,16 +214,20 @@ def main():
                 pb = os.path.join(tmp, "as_b", os.path.relpath(pa, os.path.join(tmp, "as_a")))
                 if open(pa, encoding="utf-8").read() != open(pb, encoding="utf-8").read():
                     diffs.append(f)
-        if diffs != ["DoAction_22.as"]:
-            sys.exit(f"FAIL scripts that differ: {diffs} (only DoAction_22.as may)")
+        if sorted(diffs) != ["DoAction_21.as", "DoAction_22.as", "DoAction_25.as"]:
+            sys.exit(f"FAIL scripts that differ: {diffs} (only DoAction_21, 22 and 25 may)")
         got = open(os.path.join(tmp, "as_b", "scripts", "frame_1", "DoAction_22.as"), encoding="utf-8").read()
         for needle in ("Equipment.aimPreview = function()", "Equipment.previewTune = function()",
                        'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
             if needle not in got:
                 sys.exit(f"FAIL the patched script lacks: {needle}")
+        for name, needle in (("DoAction_21", "tab._y = 0;"), ("DoAction_25", "Equipment.padEdge = function(details, before)"),
+                             ("DoAction_25", "Equipment.leavePad(true);")):
+            if needle not in open(os.path.join(tmp, "as_b", "scripts", "frame_1", name + ".as"), encoding="utf-8").read():
+                sys.exit(f"FAIL {name} lacks: {needle}")
         os.makedirs(a.out, exist_ok=True)
         shutil.copy2(out_swf, os.path.join(a.out, "panel.swf"))
-        print(f"ok  {os.path.join(a.out, 'panel.swf')}  sha256 {sha(out_swf)}  (only DoAction_22 differs)")
+        print(f"ok  {os.path.join(a.out, 'panel.swf')}  sha256 {sha(out_swf)}  (only DoAction_21, 22 and 25 differ)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

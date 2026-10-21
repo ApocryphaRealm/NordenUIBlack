@@ -19,14 +19,14 @@
     item shows far smaller than the window was made for. The option installs Norden UI's own "SkyUI Default" 3D item file
     (scale 1.5), the same as picking "SkyUI Default" under Inventory Patches > 3D Item Location. Players on another layout
     set the 3D item scale to 1.5 and the offsets to 0 in SkyUI's MCM instead (the option's text says so).
-  - "Inventory Reforged - larger centred item preview (Inventory Reforged 1.2.4 only)": optional, never preselected
+  - "Inventory Reforged - panel fixes: item preview, controller, Character button (Inventory Reforged 1.2.4 only)": optional, never preselected
     (the owner, 2026-10-21: with the 3D item scale at 1.5 the item grew 3x but stayed about a fifth of the box and sat
     high in a tall black panel; with a first fix it was "a little bit too big", and a bow, a sword and a cuirass left
     the window; and: "a setting that actually controlled the size of the model and its positioning ... the item
     preview instead of the character"). Cause, read from Inventory Reforged's panel.swf and DLL: its item window keeps
     the 3D item in a box of 130 stage units at the window's top and asks the plugin (PlacePreview) for an item
     (130 - 16) / screen height tall - a plain scale, not a fit - while under Norden UI the window is much taller. The
-    option replaces panel.swf with a copy where only one script (DoAction_22) changed: `Equipment.aimPreview` aims the
+    option replaces panel.swf with a copy where three scripts changed (DoAction_22: preview and popup; DoAction_21: the Character tab; DoAction_25: gamepad): `Equipment.aimPreview` aims the
     item at the middle of the whole part of the window above its stats and asks min(area, window width) x fit x size,
     fit 0.95 for weapons and ammo (a sword is as long as the height asked for, a bow 0.86 of it each way, measured on
     the owner's screenshots) and 1.1 for everything else (a cuirass reached 0.875 of the 1.35 request), so every item
@@ -36,6 +36,14 @@
     without changing the DLL), so they are remembered across sessions; with the character on they drive the character
     and the item uses the defaults. Range 60-140 percent and plus or minus 40 percent, as the plugin clamps them.
     tools/ir-preview-patch.py makes the file from the original (SHA-256 checked) and reads back that no other script
+    Two more changes (the owner, 2026-10-21) ride in the same file - a mod folder holds one panel.swf, so they are one
+    option: (1) controller: Inventory Reforged already has gamepad navigation of its slots (right stick click enters
+    it - the bottom bar shows "Panel" - then D-pad among the two columns, A as a click, B back, X hide, a ring on the
+    focused slot, and the chips and the Character tab), but nothing led into it from the item list. D-pad Right on the
+    last category (where SkyUI's Right goes nowhere) now enters the slots, and D-pad Left in the first column goes back
+    to the list; Right on any other category still changes category. (2) The CHARACTER tab stays at the bottom of the
+    screen when the drawer opens (the drawer opens above it; the drawer's room is one tab height smaller) instead of
+    riding the drawer's top edge.
     changed. Permission: Inventory Reforged's page allows changing any part of the mod
     (extras/inventory-reforged/PERMISSIONS.txt).
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
