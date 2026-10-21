@@ -19,6 +19,16 @@
     item shows far smaller than the window was made for. The option installs Norden UI's own "SkyUI Default" 3D item file
     (scale 1.5), the same as picking "SkyUI Default" under Inventory Patches > 3D Item Location. Players on another layout
     set the 3D item scale to 1.5 and the offsets to 0 in SkyUI's MCM instead (the option's text says so).
+  - "Inventory Reforged - larger centred item preview (Inventory Reforged 1.2.4 only)": optional, never preselected
+    (the owner, 2026-10-21, after trying the 3D item scale 1.5: the item grew 3x but stayed about a fifth of the box
+    and sat high in a tall black panel). Cause, read from Inventory Reforged's panel.swf and DLL: its item window keeps
+    the 3D item in a box of 130 stage units at the window's top and asks the plugin (PlacePreview) for an item
+    (130 - 16) / screen height tall, while under Norden UI the window is much taller (space for an item card the
+    window does not show) - so the item is small, sized for a 130-unit box, and high. The option replaces panel.swf
+    with a copy where only `Equipment.aimPreview` changed: it aims the item at the whole part of the window above its
+    stats, centred, and asks for 1.35 times that height (capped at the window width). tools/ir-preview-patch.py makes it
+    from the original (SHA-256 checked) and reads back that no other script changed. Permission: Inventory Reforged's
+    page allows changing any part of the mod (extras/inventory-reforged/PERMISSIONS.txt).
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
   "Norden default 3D item position 1.1" file.
 

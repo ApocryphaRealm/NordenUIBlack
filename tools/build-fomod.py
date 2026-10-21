@@ -290,6 +290,21 @@ ET.SubElement(_irq, "description").text = (
     "Norden UI so this file wins. Norden UI is Nithog's work; this is Nithog's file, unchanged.")
 ET.SubElement(ET.SubElement(_irq, "files"), "folder", {"source": "Inventory Reforged preview", "destination": "", "priority": "0"})
 ET.SubElement(ET.SubElement(_irq, "typeDescriptor"), "type", {"name": "Optional"})
+IR_PANEL = os.path.join(BUILD, "ir-panel", "Interface", "InventoryReforged", "panel.swf")   # tools/ir-preview-patch.py
+if not os.path.isfile(IR_PANEL):
+    fail(f"patched Inventory Reforged panel.swf missing: {IR_PANEL} - run tools/ir-preview-patch.py first")
+_irl = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - larger centred item preview (Inventory Reforged 1.2.4 only)"})
+ET.SubElement(_irl, "description").text = (
+    "Only for Inventory Reforged for SkyUI 1.2.4 (Nexus 195826), and only if the 3D item in its item window is small and "
+    "sits high in a tall black panel. Under Norden UI the item window is taller than the box Inventory Reforged keeps "
+    "for the 3D item, so the item shows small near the top. This replaces Inventory Reforged's panel.swf with a copy "
+    "in which one function (the one that aims the 3D item) aims it at the whole part of the window above its stats - "
+    "centred - and asks for a larger item. Nothing else in the file changes. Inventory Reforged's page allows changing "
+    "any part of the mod; credit: Inventory Reforged for SkyUI. The file belongs to version 1.2.4: untick this option "
+    "(or delete the file) after updating Inventory Reforged. Works best with SkyUI's 3D item scale at 1.5 and offsets 0 "
+    "(or the 'item preview size' option). Give Norden UI - Black a higher priority than Inventory Reforged.")
+ET.SubElement(ET.SubElement(_irl, "files"), "folder", {"source": "Inventory Reforged larger preview", "destination": "", "priority": "0"})
+ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
 IR_NOTE = """Inventory Reforged for SkyUI - what Norden UI - Black's option installs
 
 SKSE\\Plugins\\InventoryReforged.ini is the default settings file of Inventory Reforged for SkyUI 1.2.4
@@ -437,6 +452,17 @@ open(os.path.join(_iro, "docs", "Inventory Reforged - Norden UI - Black.txt"), "
 _irv = os.path.join(OUT, "Inventory Reforged preview", "MCM", "Settings")
 os.makedirs(_irv)
 shutil.copy2(IR_3D_SRC, os.path.join(_irv, "SkyUI_SE.ini"))
+_irl_dir = os.path.join(OUT, "Inventory Reforged larger preview", "Interface", "InventoryReforged")
+os.makedirs(_irl_dir)
+shutil.copy2(IR_PANEL, os.path.join(_irl_dir, "panel.swf"))
+os.makedirs(os.path.join(OUT, "Inventory Reforged larger preview", "docs"))
+open(os.path.join(OUT, "Inventory Reforged larger preview", "docs", "Inventory Reforged panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(
+    "Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"larger centred item preview\" option is\n"
+    "panel.swf of Inventory Reforged for SkyUI 1.2.4 (Nexus 195826) with ONE function changed, Equipment.aimPreview: the 3D item\n"
+    "is aimed at the whole part of the item window above its stats and asked for 1.35 times the height the 130-unit box\n"
+    "allowed, capped at the window's width. Inventory Reforged's page allows changing and including any part of the mod\n"
+    "without asking; credit: Inventory Reforged for SkyUI. Tool: tools/ir-preview-patch.py in the Norden UI - Black repository.\n"
+    "Delete this file (or untick the option) after updating Inventory Reforged.\n")
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
 # LICENSE and NOTICE come from the repo (they used to be copied from the previous release - library 7050's seeding
 # trap: a notice changed in the repo would never have reached the package)
@@ -488,7 +514,9 @@ parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the re
 so it is black under Norden UI - Black. The option is that mod's own default settings file with only those two colours
 changed (SKSE\\Plugins\\InventoryReforged.ini) - no art or code of Inventory Reforged. Its menu settings still win. A second,
 unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
-Inventory Reforged's item window is small. Give Norden UI - Black a higher priority than Inventory Reforged.
+Inventory Reforged's item window is small. A third, unticked choice, "larger centred item preview" (Inventory Reforged 1.2.4
+only), replaces its panel.swf with a copy where only the function that aims the 3D item changed (allowed by that mod's page).
+Give Norden UI - Black a higher priority than Inventory Reforged.
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.

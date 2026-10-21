@@ -63,3 +63,7 @@ panel already follows the skin. No art or code of that mod is shipped. **Invento
 (optional, never preselected) installs Norden UI's own "SkyUI Default" 3D item position, because Inventory Reforged
 sizes its item window's 3D item from the game's 3D-item position at first open, and the layouts of Norden UI's installer
 set that position for Norden's own item card. Norden UI - Black must have a higher priority than Inventory Reforged.
+
+A third choice, **Inventory Reforged - larger centred item preview** (optional, Inventory Reforged 1.2.4 only), replaces that
+mod's `panel.swf` with a copy in which only `Equipment.aimPreview` changed (made by `tools/ir-preview-patch.py`; the file is
+not in the repository): the 3D item is aimed at the whole part of the item window above its stats and drawn larger.
