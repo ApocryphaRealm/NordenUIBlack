@@ -65,5 +65,5 @@ sizes its item window's 3D item from the game's 3D-item position at first open, 
 set that position for Norden's own item card. Norden UI - Black must have a higher priority than Inventory Reforged.
 
 A third choice, **Inventory Reforged - larger centred item preview** (optional, Inventory Reforged 1.2.4 only), replaces that
-mod's `panel.swf` with a copy in which only `Equipment.aimPreview` changed (made by `tools/ir-preview-patch.py`; the file is
-not in the repository): the 3D item is aimed at the whole part of the item window above its stats and drawn larger.
+mod's `panel.swf` with a copy in which only one script (DoAction_22) changed (made by `tools/ir-preview-patch.py`; the file is
+not in the repository): the 3D item is aimed at the middle of the part of the item window above its stats and sized to fit it, and the settings popup gets an Item preview section (Size, Sideways, Up and down, Reset) when the character is off.

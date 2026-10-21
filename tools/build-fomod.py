@@ -295,14 +295,19 @@ if not os.path.isfile(IR_PANEL):
     fail(f"patched Inventory Reforged panel.swf missing: {IR_PANEL} - run tools/ir-preview-patch.py first")
 _irl = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - larger centred item preview (Inventory Reforged 1.2.4 only)"})
 ET.SubElement(_irl, "description").text = (
-    "Only for Inventory Reforged for SkyUI 1.2.4 (Nexus 195826), and only if the 3D item in its item window is small and "
-    "sits high in a tall black panel. Under Norden UI the item window is taller than the box Inventory Reforged keeps "
-    "for the 3D item, so the item shows small near the top. This replaces Inventory Reforged's panel.swf with a copy "
-    "in which one function (the one that aims the 3D item) aims it at the whole part of the window above its stats - "
-    "centred - and asks for a larger item. Nothing else in the file changes. Inventory Reforged's page allows changing "
-    "any part of the mod; credit: Inventory Reforged for SkyUI. The file belongs to version 1.2.4: untick this option "
-    "(or delete the file) after updating Inventory Reforged. Works best with SkyUI's 3D item scale at 1.5 and offsets 0 "
-    "(or the 'item preview size' option). Give Norden UI - Black a higher priority than Inventory Reforged.")
+    "Only for Inventory Reforged for SkyUI 1.2.4 (Nexus 195826), and only if the 3D item in its item window is small, "
+    "sits high in a tall black panel or leaves the window. Under Norden UI the item window is taller than the box "
+    "Inventory Reforged keeps for the 3D item, and long things (swords, bows) and tall ones (cuirasses) do not fit it at "
+    "a size that looks right. This replaces Inventory Reforged's panel.swf with a copy in which the item is aimed at the "
+    "middle of the whole part of the window above its stats and sized to fit that area (weapons and ammo a little "
+    "smaller, since they are long). It also gives the item its own controls: with 'Show the character' switched off, the "
+    "settings popup (the cog) has an ITEM PREVIEW section - Size, Sideways, Up and down, Reset size and place - kept in "
+    "the same three saved numbers as the character's (60 to 140 percent, plus or minus 40 percent), so they are "
+    "remembered. With the character on, those numbers belong to the character again and the item uses the defaults. "
+    "Inventory Reforged's page allows changing any part of the mod; credit: Inventory Reforged for SkyUI. The file "
+    "belongs to version 1.2.4: untick this option (or delete the file) after updating Inventory Reforged. Works best "
+    "with SkyUI's 3D item scale at 1.5 and offsets 0 (or the 'item preview size' option). Give Norden UI - Black a "
+    "higher priority than Inventory Reforged.")
 ET.SubElement(ET.SubElement(_irl, "files"), "folder", {"source": "Inventory Reforged larger preview", "destination": "", "priority": "0"})
 ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
 IR_NOTE = """Inventory Reforged for SkyUI - what Norden UI - Black's option installs
@@ -458,10 +463,13 @@ shutil.copy2(IR_PANEL, os.path.join(_irl_dir, "panel.swf"))
 os.makedirs(os.path.join(OUT, "Inventory Reforged larger preview", "docs"))
 open(os.path.join(OUT, "Inventory Reforged larger preview", "docs", "Inventory Reforged panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(
     "Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"larger centred item preview\" option is\n"
-    "panel.swf of Inventory Reforged for SkyUI 1.2.4 (Nexus 195826) with ONE function changed, Equipment.aimPreview: the 3D item\n"
-    "is aimed at the whole part of the item window above its stats and asked for 1.35 times the height the 130-unit box\n"
-    "allowed, capped at the window's width. Inventory Reforged's page allows changing and including any part of the mod\n"
-    "without asking; credit: Inventory Reforged for SkyUI. Tool: tools/ir-preview-patch.py in the Norden UI - Black repository.\n"
+    "panel.swf of Inventory Reforged for SkyUI 1.2.4 (Nexus 195826) with ONE script changed (DoAction_22): Equipment.aimPreview\n"
+    "is replaced - the 3D item is aimed at the middle of the whole part of the item window above its stats and sized to\n"
+    "min(area, window width) x fit (0.95 weapons and ammo, 1.1 the rest) x the player's size - and the settings popup\n"
+    "gets an ITEM PREVIEW section (Size, Sideways, Up and down, Reset) when the character is switched off, using the\n"
+    "saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]). Inventory Reforged's page allows\n"
+    "changing and including any part of the mod without asking; credit: Inventory Reforged for SkyUI.\n"
+    "Tool: tools/ir-preview-patch.py in the Norden UI - Black repository.\n"
     "Delete this file (or untick the option) after updating Inventory Reforged.\n")
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
 # LICENSE and NOTICE come from the repo (they used to be copied from the previous release - library 7050's seeding

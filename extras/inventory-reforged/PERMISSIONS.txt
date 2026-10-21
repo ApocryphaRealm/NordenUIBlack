@@ -10,7 +10,7 @@ credit welcome. The structured Permissions tab of the page is not exposed by the
 description's grant is explicit and is the author's own statement.
 
 What Norden UI - Black 1.0.5 ships on that basis: (1) the mod's default settings file (INI text) with two colour
-numbers changed; (2) in a separate, unticked option, panel.swf of 1.2.4 with one function changed (the aimPreview
-function), made by tools/ir-preview-patch.py and not stored in the repository. No DLL (code) of Inventory Reforged is
+numbers changed; (2) in a separate, unticked option, panel.swf of 1.2.4 with one script changed (DoAction_22: the aimPreview
+function and the popup's Item preview section), made by tools/ir-preview-patch.py and not stored in the repository. No DLL (code) of Inventory Reforged is
 shipped. The panel.swf option is for 1.2.4 only and says so; delete it after an Inventory Reforged update.
 The credit sits in NOTICE.md, in the option's installed note and in the package README.
