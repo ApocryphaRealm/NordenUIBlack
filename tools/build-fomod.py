@@ -290,30 +290,36 @@ ET.SubElement(_irq, "description").text = (
     "Norden UI so this file wins. Norden UI is Nithog's work; this is Nithog's file, unchanged.")
 ET.SubElement(ET.SubElement(_irq, "files"), "folder", {"source": "Inventory Reforged preview", "destination": "", "priority": "0"})
 ET.SubElement(ET.SubElement(_irq, "typeDescriptor"), "type", {"name": "Optional"})
-IR_PANEL = os.path.join(BUILD, "ir-panel", "Interface", "InventoryReforged", "panel.swf")   # tools/ir-preview-patch.py
-if not os.path.isfile(IR_PANEL):
-    fail(f"patched Inventory Reforged panel.swf missing: {IR_PANEL} - run tools/ir-preview-patch.py first")
-_irl = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - panel fixes: item preview and Character button (Inventory Reforged 1.2.4 only)"})
-ET.SubElement(_irl, "description").text = (
-    "Only for Inventory Reforged for SkyUI 1.2.4 (Nexus 195826), and only if the 3D item in its item window is small, "
-    "sits high in a tall black panel or leaves the window. Under Norden UI the item window is taller than the box "
-    "Inventory Reforged keeps for the 3D item, and long things (swords, bows) and tall ones (cuirasses) do not fit it at "
-    "a size that looks right. This replaces Inventory Reforged's panel.swf with a copy in which the item is aimed at the "
-    "middle of the whole part of the window above its stats and sized to fit that area (weapons and ammo a little "
-    "smaller, since they are long). It also gives the item its own controls: with 'Show the character' switched off, the "
-    "settings popup (the cog) has an ITEM PREVIEW section - Size, Sideways, Up and down, Reset size and place - kept in "
-    "the same three saved numbers as the character's (60 to 140 percent, plus or minus 40 percent), so they are "
-    "remembered. With the character on, those numbers belong to the character again and the item uses the defaults. "
-    "One more change rides in the same file, since a mod folder can hold only one panel.swf: the CHARACTER button stays "
-    "at the bottom of the screen when the Character drawer opens - the drawer opens above it. "
-    "And Norden's item card is no longer moved or shrunk by Inventory Reforged's window: it stays where the skin puts it, "
-    "below the item list, at its own size, while the item window still follows the row. "
-    "Inventory Reforged's page allows changing any part of the mod; credit: Inventory Reforged for SkyUI. The file "
-    "belongs to version 1.2.4: untick this option (or delete the file) after updating Inventory Reforged. Works best "
-    "with SkyUI's 3D item scale at 1.5 and offsets 0 (or the 'item preview size' option). Give Norden UI - Black a "
-    "higher priority than Inventory Reforged.")
-ET.SubElement(ET.SubElement(_irl, "files"), "folder", {"source": "Inventory Reforged larger preview", "destination": "", "priority": "0"})
-ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
+IR_PANELS = {}   # version -> (patched panel.swf from tools/ir-preview-patch.py, folder in the package)
+for _v, _folder in (("1.2.4", "Inventory Reforged panel 1.2.4"), ("1.3.0", "Inventory Reforged panel 1.3.0")):
+    _f = os.path.join(BUILD, "ir-panel", _v, "Interface", "InventoryReforged", "panel.swf")
+    if not os.path.isfile(_f):
+        fail(f"patched Inventory Reforged {_v} panel.swf missing: {_f} - run tools/ir-preview-patch.py first")
+    IR_PANELS[_v] = (_f, _folder)
+# one panel.swf per mod folder, and it belongs to one Inventory Reforged version: the two choices exclude each other
+_irg = ET.SubElement(groups, "group", {"name": "Inventory Reforged panel fixes - pick the version you use", "type": "SelectAtMostOne"})
+_irgp = ET.SubElement(_irg, "plugins", {"order": "Explicit"})
+for _v, (_f, _folder) in IR_PANELS.items():
+    _irl = ET.SubElement(_irgp, "plugin", {"name": f"Inventory Reforged {_v} - panel fixes: item preview, Character button, Norden's own item card"})
+    ET.SubElement(_irl, "description").text = (
+        f"Only for Inventory Reforged for SkyUI {_v} (Nexus 195826), and only if its item window misbehaves under Norden UI. "
+        "(1) The 3D item in its item window is small, sits high or leaves the window: it is now aimed at the middle of the "
+        "whole part of the window above its stats and sized to fit it (weapons and ammo a little smaller, being long), and with "
+        "'Show the character' switched off the settings popup (the cog) has an ITEM PREVIEW section - Size, Sideways, Up and "
+        "down, Reset size and place - kept in the same three saved numbers as the character's (60 to 140 percent, plus or "
+        "minus 40 percent), so they are remembered; with the character on those numbers belong to the character again. "
+        "(2) The CHARACTER button stays at the bottom of the screen when the Character drawer opens; the drawer opens above it. "
+        "(3) Norden's item card is left alone: Inventory Reforged takes the menu's own item card into its window - hides the "
+        "card's background art, adds a kind line and shifts the card's parts, rescales it to the window width, moves it with the "
+        "window, re-breaks its effect text and, from 1.3.0, hides it whenever its window is hidden - so it never looked like "
+        "Norden's card. This replaces Inventory Reforged's panel.swf with a copy that does none of that: Norden's card shows as "
+        "Norden made it, in Norden's place below the item list, all the time, while the item window still follows the row. "
+        "The kind line (\"ONE-HANDED, SWORD\") that Inventory Reforged added to the card is not shown. Inventory Reforged's "
+        "page allows changing any part of the mod; credit: Inventory Reforged for SkyUI. The file belongs to version "
+        f"{_v}: untick this option (or delete the file) after updating Inventory Reforged. Works best with SkyUI's 3D item scale "
+        "at 1.5 and offsets 0 (or the 'item preview size' option). Give Norden UI - Black a higher priority than Inventory Reforged.")
+    ET.SubElement(ET.SubElement(_irl, "files"), "folder", {"source": _folder, "destination": "", "priority": "0"})
+    ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
 IR_NOTE = """Inventory Reforged for SkyUI - what Norden UI - Black's option installs
 
 SKSE\\Plugins\\InventoryReforged.ini is the default settings file of Inventory Reforged for SkyUI 1.2.4
@@ -461,24 +467,24 @@ open(os.path.join(_iro, "docs", "Inventory Reforged - Norden UI - Black.txt"), "
 _irv = os.path.join(OUT, "Inventory Reforged preview", "MCM", "Settings")
 os.makedirs(_irv)
 shutil.copy2(IR_3D_SRC, os.path.join(_irv, "SkyUI_SE.ini"))
-_irl_dir = os.path.join(OUT, "Inventory Reforged larger preview", "Interface", "InventoryReforged")
-os.makedirs(_irl_dir)
-shutil.copy2(IR_PANEL, os.path.join(_irl_dir, "panel.swf"))
-os.makedirs(os.path.join(OUT, "Inventory Reforged larger preview", "docs"))
-open(os.path.join(OUT, "Inventory Reforged larger preview", "docs", "Inventory Reforged panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(
-    "Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"panel fixes\" option is\n"
-    "panel.swf of Inventory Reforged for SkyUI 1.2.4 (Nexus 195826) with TWO scripts changed (DoAction_21, 22): Equipment.aimPreview\n"
-    "is replaced - the 3D item is aimed at the middle of the whole part of the item window above its stats and sized to\n"
-    "min(area, window width) x fit (0.95 weapons and ammo, 1.1 the rest) x the player's size - and the settings popup\n"
-    "gets an ITEM PREVIEW section (Size, Sideways, Up and down, Reset) when the character is switched off, using the\n"
-    "saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]).\n"
-    "DoAction_21 (Character drawer): the CHARACTER tab stays at the bottom, the drawer opens above it.\n"
-    "DoAction_22 also redefines sizeWindow, windowUnits, placeWindow and cardSpan without the lines that moved and rescaled\n"
-    "the item card with the window (the card stays in the skin's place; the window keeps a fixed room for the preview).\n"
-    "Inventory Reforged's page allows\n"
-    "changing and including any part of the mod without asking; credit: Inventory Reforged for SkyUI.\n"
-    "Tool: tools/ir-preview-patch.py in the Norden UI - Black repository.\n"
-    "Delete this file (or untick the option) after updating Inventory Reforged.\n")
+for _v, (_f, _folder) in IR_PANELS.items():
+    _d = os.path.join(OUT, _folder, "Interface", "InventoryReforged")
+    os.makedirs(_d)
+    shutil.copy2(_f, os.path.join(_d, "panel.swf"))
+    os.makedirs(os.path.join(OUT, _folder, "docs"))
+    open(os.path.join(OUT, _folder, "docs", f"Inventory Reforged {_v} panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(
+        f"Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"panel fixes\" option is\n"
+        f"panel.swf of Inventory Reforged for SkyUI {_v} (Nexus 195826) with TWO scripts changed (DoAction_21, 22):\n"
+        "DoAction_22: Equipment.aimPreview is replaced - the 3D item is aimed at the middle of the whole part of the item window\n"
+        "above its stats and sized to min(area, window width) x fit (0.95 weapons and ammo, 1.1 the rest) x the player's size - and\n"
+        "the settings popup gets an ITEM PREVIEW section (Size, Sideways, Up and down, Reset) when the character is switched off,\n"
+        "using the saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]). DoAction_22 also redefines\n"
+        "sizeWindow, windowUnits, placeWindow, cardSpan, showWindow, keepFrameHidden and effectLines without the lines that moved,\n"
+        "rescaled, hid, restyled and re-worded the menu's item card (Norden's), so it shows as Norden made it, in Norden's place.\n"
+        "DoAction_21 (Character drawer): the CHARACTER tab stays at the bottom, the drawer opens above it.\n"
+        "Inventory Reforged's page allows changing and including any part of the mod without asking; credit: Inventory Reforged\n"
+        "for SkyUI. Tool: tools/ir-preview-patch.py in the Norden UI - Black repository. Delete this file (or untick the option)\n"
+        "after updating Inventory Reforged.\n")
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
 # LICENSE and NOTICE come from the repo (they used to be copied from the previous release - library 7050's seeding
 # trap: a notice changed in the repo would never have reached the package)
@@ -530,7 +536,7 @@ parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the re
 so it is black under Norden UI - Black. The option is that mod's own default settings file with only those two colours
 changed (SKSE\\Plugins\\InventoryReforged.ini) - no art or code of Inventory Reforged. Its menu settings still win. A second,
 unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
-Inventory Reforged's item window is small. A third, unticked choice, "panel fixes" (Inventory Reforged 1.2.4 only), replaces its panel.swf with a copy where two scripts changed: the item preview and the Character button staying at the bottom (allowed by that mod's page).
+Inventory Reforged's item window is small. A third, unticked choice (one per Inventory Reforged version, 1.2.4 or 1.3.0), "panel fixes", replaces its panel.swf with a copy where two scripts changed: the item preview, the Character button staying at the bottom, and Norden's own item card left alone (allowed by that mod's page).
 Give Norden UI - Black a higher priority than Inventory Reforged.
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.

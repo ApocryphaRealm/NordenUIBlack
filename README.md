@@ -64,6 +64,6 @@ panel already follows the skin. No art or code of that mod is shipped. **Invento
 sizes its item window's 3D item from the game's 3D-item position at first open, and the layouts of Norden UI's installer
 set that position for Norden's own item card. Norden UI - Black must have a higher priority than Inventory Reforged.
 
-A third choice, **Inventory Reforged - panel fixes** (optional, Inventory Reforged 1.2.4 only), replaces that
+A third choice, **Inventory Reforged - panel fixes** (one per version, 1.2.4 or 1.3.0) (optional), replaces that
 mod's `panel.swf` with a copy in which two scripts (DoAction_21, 22) changed (made by `tools/ir-preview-patch.py`; the file is
-not in the repository): the 3D item is aimed at the middle of the part of the item window above its stats and sized to fit it, and the settings popup gets an Item preview section (Size, Sideways, Up and down, Reset) when the character is off; the Character button stays at the bottom; the item card stays in the skin's place instead of following the window.
+not in the repository): the 3D item is aimed at the middle of the part of the item window above its stats and sized to fit it, and the settings popup gets an Item preview section (Size, Sideways, Up and down, Reset) when the character is off; the Character button stays at the bottom; Norden's own item card stays untouched in the skin's place instead of being restyled and moved by Inventory Reforged.

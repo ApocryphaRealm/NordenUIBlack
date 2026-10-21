@@ -19,7 +19,7 @@
     item shows far smaller than the window was made for. The option installs Norden UI's own "SkyUI Default" 3D item file
     (scale 1.5), the same as picking "SkyUI Default" under Inventory Patches > 3D Item Location. Players on another layout
     set the 3D item scale to 1.5 and the offsets to 0 in SkyUI's MCM instead (the option's text says so).
-  - "Inventory Reforged - panel fixes: item preview and Character button (Inventory Reforged 1.2.4 only)": optional, never preselected
+  - "Inventory Reforged 1.2.4 / 1.3.0 - panel fixes: item preview, Character button, Norden's own item card": optional, never preselected
     (the owner, 2026-10-21: with the 3D item scale at 1.5 the item grew 3x but stayed about a fifth of the box and sat
     high in a tall black panel; with a first fix it was "a little bit too big", and a bow, a sword and a cuirass left
     the window; and: "a setting that actually controlled the size of the model and its positioning ... the item
@@ -41,17 +41,24 @@
     height smaller) instead of riding the drawer's top edge. Inventory Reforged's own gamepad navigation (right stick
     click, D-pad, A, B, X) is left as it is - the owner tested it and wants no change.
     A third change (the owner, 2026-10-21: "the items card, which while using Norden UI would normally be locked in
-    position below the inventory list, is now moving up and down"): stock Inventory Reforged moves and rescales the
-    SkyUI/Norden item card with its own window (DoAction_18: sizeWindow sets the card's y scale to the window width,
-    windowUnits its x scale, placeWindow its _x and _y so it follows the selected row and flips above or below, and the
-    window height reserves the card's bounds), so the card text shrank, slid up and down and overlapped the top rows
-    when the window opened above; it is also why Norden's card text showed at the left, outside the window. Our edits
-    never touched it. The option now redefines those four functions (in DoAction_22, a later tag, so they win) without
-    the card lines and with a fixed 150-unit room instead of the card's bounds: Norden's card stays where the skin puts
-    it (below the list in the Slimventory layout) at its own size, and the item window still follows the row. Inventory
-    Reforged's kind line (bQuietTags) is left as it is (the owner).
-    changed. Permission: Inventory Reforged's page allows changing any part of the mod
-    (extras/inventory-reforged/PERMISSIONS.txt).
+    position below the inventory list, is now moving up and down" and "it was using a different item card than the one
+    that Norden Black uses"; "find a way for Norden Black to ... override it properly to keep it in place and use Norden
+    Black's position and size and design"). The card IS Norden Black's: in the test profile test Norden UI - Black 1.0.5
+    wins inventorymenu.swf, skyui\itemcard.swf and every deardiary_dm\inventory\itemcard_N_BG.swf (same files as Norden
+    UI Black 1.0.3; nothing above it ships any; Dragonborn UI is off; the overwrite folder has none). Inventory Reforged
+    takes that card into its own window and restyles it (DoAction_18 of 1.2.4 and 1.3.0): placeWindow moves it (_x, _y) and
+    hides its background art and Stolen text and adds a kind line, shifting the card's parts down 26 units; sizeWindow and
+    windowUnits rescale it to the window width; the window height reserves its bounds; effectLines re-breaks its effect
+    text; keepFrameHidden re-hides the background every frame; and, from 1.3.0, showWindow hides the whole card whenever
+    IR's window is hidden. So the card showed small, without Norden's art, sliding up and down with the window - never as
+    Norden draws it. The option now redefines those seven functions (in DoAction_22, a later tag, so they win) without
+    those lines and with a fixed 150-unit room instead of the card's bounds: Norden's card shows as Norden made it, in
+    Norden's place below the list, at its own size, all the time, and the item window still follows the row with the fitted
+    preview. The kind line cannot stay: it is a text field added INTO the card and the card's parts are shifted to make
+    room for it, which is exactly the modification Norden's card must not get; IR's window keeps its own quiet tags.
+    There is one option per Inventory Reforged version (1.2.4 and 1.3.0, each a SHA-256-locked panel.swf; a group that takes
+    at most one); tools/ir-preview-patch.py builds both and refuses any other file.
+
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
   "Norden default 3D item position 1.1" file.
 

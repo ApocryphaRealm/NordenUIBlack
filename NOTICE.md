@@ -54,9 +54,9 @@ mod's default settings file `SKSE\Plugins\InventoryReforged.ini`, with only `iAc
 changed to Norden UI - Black's palette (a copy of the file is in `extras/inventory-reforged/`). The colours option
 includes no art (SWF) and no code (DLL) of Inventory Reforged. The "item preview size" option installs Norden UI's own
 "SkyUI Default" 3D item position file (Nithog), unchanged. The separate, unticked "larger centred item preview" option
-(1.0.5) installs `Interface\InventoryReforged\panel.swf` of Inventory Reforged 1.2.4 with TWO scripts changed
+(1.0.5) installs `Interface\InventoryReforged\panel.swf` of Inventory Reforged 1.2.4 or 1.3.0 (one option each) with TWO scripts changed
 (DoAction_21 and 22: where and how large the 3D item is aimed, and an Item preview section of the settings popup, the Character button staying at the bottom, and the item card no longer following the window), made by `tools/ir-preview-patch.py` from the
-original file (SHA-256 in `extras/inventory-reforged/panel-1.2.4.sha256`) - changed and included under the permission
+original file (SHA-256 in `extras/inventory-reforged/panel-1.2.4.sha256` and `panel-1.3.0.sha256`) - changed and included under the permission
 quoted above; the file is not in this repository. No DLL of Inventory Reforged is ever included.
 
 ## This repository
