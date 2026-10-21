@@ -1,6 +1,27 @@
 # Changelog - Norden UI - Black
 
 
+## 1.0.5 - 2026-10-21 - untested
+
+### Added
+- **Inventory Reforged for SkyUI** (Nexus 195826) - two new options on the installer's last page (the owner, 2026-10-21:
+  "adding support in Norden Black to have it recoloured for Norden Black").
+  - "Inventory Reforged - Norden Black colours": Inventory Reforged takes every colour but two from the skin it sits
+    on (its sheet, edges and buttons are already black under Norden UI - Black); the two it owns are its gold accent
+    and its parchment text. The option installs that mod's own default settings file, SKSE\Plugins\InventoryReforged.ini,
+    with only `iAccentColor` (14069864 -> 12303807, Norden's silver #BBBDBF) and `iTextColor` (15130824 -> 15066597,
+    #E5E5E5) changed. No art and no code of Inventory Reforged is shipped (its page also allows reuse of any part of the
+    mod, credit welcome - NOTICE.md). Its MCM settings still win key by key. Recommended when Inventory Reforged's DLL
+    is installed, otherwise optional and unticked. Norden UI - Black needs a higher priority than Inventory Reforged.
+  - "Inventory Reforged - item preview size": optional, never preselected. Inventory Reforged places and sizes the 3D
+    item of its item window from the game's 3D-item position the first time the inventory opens, and the layout chosen in
+    Norden UI's installer sets that position for Norden's own item card (Slimventory: scale 0.6, offsets 53 / -45), so the
+    item shows far smaller than the window was made for. The option installs Norden UI's own "SkyUI Default" 3D item file
+    (scale 1.5), the same as picking "SkyUI Default" under Inventory Patches > 3D Item Location. Players on another layout
+    set the 3D item scale to 1.5 and the offsets to 0 in SkyUI's MCM instead (the option's text says so).
+- build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
+  "Norden default 3D item position 1.1" file.
+
 ## Unreleased
 
 ### Added

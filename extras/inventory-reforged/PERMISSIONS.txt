@@ -1,0 +1,15 @@
+Inventory Reforged for SkyUI (Nexus 195826), version 1.2.4 - permission finding, read 2026-10-21
+
+Source: the mod page's description as stored in the installed copy's meta.ini (nexusDescription), Description section:
+
+  "Everything in this mod is open. You may use, change, translate, convert, reupload and include any part of it
+   in your own mods, free or not, without asking. A credit is welcome."
+
+Reading: modified releases and inclusion of its files in another mod are allowed, free or not, no permission needed,
+credit welcome. The structured Permissions tab of the page is not exposed by the API and was not read; the
+description's grant is explicit and is the author's own statement.
+
+What Norden UI - Black 1.0.5 ships on that basis: only the mod's default settings file (INI text) with two colour
+numbers changed. No panel.swf / eyes.swf (art) and no DLL (code) of Inventory Reforged is shipped, so the option does
+not depend on the grant for art, and an Inventory Reforged update that changes its art cannot be broken by a stale copy.
+The credit sits in NOTICE.md, in the option's installed note and in the package README.

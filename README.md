@@ -52,3 +52,14 @@ DLL. Thanks to emberchain for Atelier and for the permission.
 
 Version: `VERSION` (stamped by the version gate). Tools GPL-3.0-or-later (`LICENSE`); the art is
 Nithog's (`NOTICE.md`).
+
+## The Inventory Reforged options (1.0.5+)
+
+For players of [Inventory Reforged for SkyUI](https://www.nexusmods.com/skyrimspecialedition/mods/195826): the installer's
+last page offers two choices. **Inventory Reforged - Norden Black colours** installs that mod's own default settings file
+(`extras/inventory-reforged/InventoryReforged.ini`, `SKSE\Plugins\InventoryReforged.ini`) with only its two colours
+(`iAccentColor`, `iTextColor`) changed to Norden's silver `#BBBDBF` and soft white `#E5E5E5`; everything else in its
+panel already follows the skin. No art or code of that mod is shipped. **Inventory Reforged - item preview size**
+(optional, never preselected) installs Norden UI's own "SkyUI Default" 3D item position, because Inventory Reforged
+sizes its item window's 3D item from the game's 3D-item position at first open, and the layouts of Norden UI's installer
+set that position for Norden's own item card. Norden UI - Black must have a higher priority than Inventory Reforged.

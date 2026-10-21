@@ -45,6 +45,16 @@ emberchain's permission, and emberchain is its author; nothing of RaceMenu (expi
 - **SHA-256:** DLL `585c1707475bb7f4ca507ef1fb0cfbdeae6946fb1ebd6c4b968c4ac22d2fb8d0`, PDB
   `15c2519732dd57181e43c3a99d0e54c3d6ef17f52de237ad7fd2b40fb481c8cc`.
 
+## Inventory Reforged for SkyUI (the optional "Inventory Reforged" installer options, 1.0.5+)
+
+[Inventory Reforged for SkyUI](https://www.nexusmods.com/skyrimspecialedition/mods/195826) is its author's work. Its page
+says everything in the mod is open: anyone may use, change, translate, convert, reupload and include any part of it in
+their own mods, free or not, without asking, and credit is welcome. This package includes one small part of it: the
+mod's default settings file `SKSE\Plugins\InventoryReforged.ini`, with only `iAccentColor` and `iTextColor` in `[Look]`
+changed to Norden UI - Black's palette (a copy of the file is in `extras/inventory-reforged/`). No art (SWF) and no code
+(DLL) of Inventory Reforged is included. The second option installs Norden UI's own "SkyUI Default" 3D item position
+file (Nithog), unchanged.
+
 ## This repository
 
 The tools and documents are GPL-3.0-or-later, ApocryphaRealm 2026. The repository carries no art.

@@ -250,6 +250,58 @@ https://www.gnu.org/licenses/gpl-3.0.txt). theme.ini holds the Norden UI - Black
 To go back to stock Atelier, untick the option (or delete these files) and let RaceMenu Atelier's own DLL win.
 """
 
+# Inventory Reforged for SkyUI (1.0.5, the owner 2026-10-21: "adding support in Norden Black to have it recoloured").
+# Inventory Reforged (Nexus 195826) is open: its page lets anyone use, change, convert, reupload and include any part
+# of it in their own mods, free or not, without asking, credit welcome (read 2026-10-21 from its description). Even so
+# this option ships NO changed Inventory Reforged art or code: the mod reads two colours from its own INI
+# (iAccentColor, iTextColor) and takes every other colour from the skin it sits on, so the option is its default INI
+# with those two numbers changed. Recommended when its DLL is installed, otherwise optional and unticked.
+IR_INI = os.path.join(REPO, "extras", "inventory-reforged", "InventoryReforged.ini")
+IR_3D_SRC = os.path.join(SRC, "Patches", "Norden default 3D item position 1.1", "MCM", "Settings", "SkyUI_SE.ini")
+for _f in (IR_INI, IR_3D_SRC):
+    if not os.path.isfile(_f):
+        fail(f"Inventory Reforged option input missing: {_f}")
+_irp = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - Norden Black colours"})
+ET.SubElement(_irp, "description").text = (
+    "Only if you use Inventory Reforged for SkyUI (Nexus 195826). Its gold accent and parchment text become Norden UI - "
+    "Black's silver (#BBBDBF) and soft white (#E5E5E5): frames, headings, numbers, tabs and names of the equipment "
+    "panel. Everything else in the panel (its black sheet, edges, buttons) already follows the skin it sits on, so it is "
+    "black under Norden UI - Black. Installs SKSE\\Plugins\\InventoryReforged.ini, Inventory Reforged's own default "
+    "settings file with only those two colours changed - no art and no code of Inventory Reforged is included. What you "
+    "set in its own menu (MCM) still wins, key by key; delete the file to get its gold back. Give Norden UI - Black a "
+    "higher priority than Inventory Reforged so this file wins.")
+ET.SubElement(ET.SubElement(_irp, "files"), "folder", {"source": "Inventory Reforged", "destination": "", "priority": "0"})
+_irt = ET.SubElement(ET.SubElement(_irp, "typeDescriptor"), "dependencyType")
+ET.SubElement(_irt, "defaultType", {"name": "Optional"})
+_irpat = ET.SubElement(ET.SubElement(_irt, "patterns"), "pattern")
+ET.SubElement(ET.SubElement(_irpat, "dependencies", {"operator": "And"}), "fileDependency",
+              {"file": r"SKSE\Plugins\InventoryReforged.dll", "state": "Active"})
+ET.SubElement(_irpat, "type", {"name": "Recommended"})
+_irq = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - item preview size (SkyUI default 3D item position)"})
+ET.SubElement(_irq, "description").text = (
+    "Only if the 3D item in Inventory Reforged's item window is small or off its place. Inventory Reforged sizes and "
+    "places that 3D item from the position SkyUI's own '3D item' settings give the game when the inventory first opens "
+    "(Norden UI's installer sets them for its own item card, e.g. scale 0.6 with the Slimventory layout, so the item is "
+    "drawn at a fraction of the size). This installs Norden UI's own 'SkyUI Default' file for them (scale 1.5, offsets "
+    "-10 / 0), the same as choosing 'SkyUI Default' under Inventory Patches > 3D Item Location in Norden UI's installer. "
+    "It also carries that file's other Norden settings (item card and effect widget), so if you use a vertical or "
+    "other layout, leave this unticked and set the 3D item scale to 1.5 and the offsets to 0 in SkyUI's MCM "
+    "(Advanced > 3D item) instead. Restart the game after changing it. Give Norden UI - Black a higher priority than "
+    "Norden UI so this file wins. Norden UI is Nithog's work; this is Nithog's file, unchanged.")
+ET.SubElement(ET.SubElement(_irq, "files"), "folder", {"source": "Inventory Reforged preview", "destination": "", "priority": "0"})
+ET.SubElement(ET.SubElement(_irq, "typeDescriptor"), "type", {"name": "Optional"})
+IR_NOTE = """Inventory Reforged for SkyUI - what Norden UI - Black's option installs
+
+SKSE\\Plugins\\InventoryReforged.ini is the default settings file of Inventory Reforged for SkyUI 1.2.4
+(https://www.nexusmods.com/skyrimspecialedition/mods/195826) with two numbers changed in [Look]:
+  iAccentColor 14069864 (gold)       -> 12303807 (#BBBDBF, Norden's silver)
+  iTextColor   15130824 (parchment)  -> 15066597 (#E5E5E5, Norden Black's text)
+Inventory Reforged's page allows using, changing, converting, reuploading and including any part of the mod in your
+own mods without asking; credit: Inventory Reforged for SkyUI. No art and no code of Inventory Reforged is included.
+Settings you make in its own menu are kept in Data/MCM/Settings/InventoryReforged.ini and win over this file.
+To go back to its own colours, untick the option or delete this file.
+"""
+
 # HUD Position Manager's own widgets in Norden Black's look (the owner, 2026-10-04: "make it a FOMOD option if they use
 # HUD Position Manager because a lot of people aren't going to be using HUD Position Manager yet and we need to maintain
 # compatibility with the current"). Built by tools/hpm-widgets.py from the installed Norden UI - Black widget art;
@@ -377,6 +429,14 @@ shutil.copy2(ATELIER_THEME, os.path.join(_ao, "RaceMenuAtelier", "theme.ini"))
 open(os.path.join(OUT, "RaceMenu Atelier", "docs", "RaceMenu Atelier - Norden UI - Black build.txt"), "w", encoding="utf-8", newline="\r\n").write(ATELIER_NOTE)
 if _sha(os.path.join(_ao, "RaceMenuAtelier.dll")) != ATELIER_DLL_SHA256:
     fail("the packaged RaceMenuAtelier.dll does not match the recorded build")
+_iro = os.path.join(OUT, "Inventory Reforged")
+os.makedirs(os.path.join(_iro, "SKSE", "Plugins"))
+os.makedirs(os.path.join(_iro, "docs"))
+shutil.copy2(IR_INI, os.path.join(_iro, "SKSE", "Plugins", "InventoryReforged.ini"))
+open(os.path.join(_iro, "docs", "Inventory Reforged - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(IR_NOTE)
+_irv = os.path.join(OUT, "Inventory Reforged preview", "MCM", "Settings")
+os.makedirs(_irv)
+shutil.copy2(IR_3D_SRC, os.path.join(_irv, "SkyUI_SE.ini"))
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
 # LICENSE and NOTICE come from the repo (they used to be copied from the previous release - library 7050's seeding
 # trap: a notice changed in the repo would never have reached the package)
@@ -423,9 +483,17 @@ Atelier - so this DLL wins. Delete theme.ini for Atelier's own colours; untick t
 RaceMenu Atelier is GPL-3.0; the build is RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]} (see NOTICE.md and
 docs\\RaceMenu Atelier - Norden UI - Black build.txt).
 
-Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu).
+Inventory Reforged (optional, 1.0.5): for players who use Inventory Reforged for SkyUI (Nexus 195826). Its gold accent and
+parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the rest of its panel already follows the skin,
+so it is black under Norden UI - Black. The option is that mod's own default settings file with only those two colours
+changed (SKSE\\Plugins\\InventoryReforged.ini) - no art or code of Inventory Reforged. Its menu settings still win. A second,
+unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
+Inventory Reforged's item window is small. Give Norden UI - Black a higher priority than Inventory Reforged.
+
+Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.
 RaceMenu Atelier is emberchain's (GPL-3.0), modified and shipped with emberchain's permission.
+Inventory Reforged for SkyUI is its author's work (Nexus 195826); its settings file is reused with the permission its page gives.
 """
 open(os.path.join(OUT, "README.txt"), "w", encoding="utf-8").write(readme)
 print(f"package: {OUT}")
