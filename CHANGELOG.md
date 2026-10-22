@@ -75,6 +75,9 @@
     list's own anchors: left at the lists' panel origin, top at the item list's origin, right at the rows' right edge (the
     stock window anchor), bottom above the card text (else above the bottom bar); the window is cut to that room and every
     placement logs a PANELTEST fixed line to the SKSE log with the bounds, room and window size.
+    Round 5: the anchors were right but the visible frame sits above them (header 20 units above the list origin, card heading 26 above the
+    name text, frame ends 24 above the card heading), and the right edge was the list edge, not the stock window edge. Fixed place now
+    uses those offsets, the stock window inset on the right, and keeps 24 units of slack so Up and down always has room to move.
 
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
   "Norden default 3D item position 1.1" file.

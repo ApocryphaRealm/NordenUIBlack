@@ -126,6 +126,10 @@ Equipment.fixedSync = function()
    }
    Equipment.fixedRead();
 };
+Equipment.FIXED_HEAD = 20;
+Equipment.FIXED_NAME_ABOVE = 26;
+Equipment.FIXED_CARD_GAP = 24;
+Equipment.FIXED_SLACK = 24;
 Equipment.placeFixed = function()
 {
    var window = Equipment.window;
@@ -139,22 +143,23 @@ Equipment.placeFixed = function()
    var right;
    var top;
    var bottom;
-   var cardTop;
+   var nameTop;
    var room;
+   var most;
    lists.panelContainer.localToGlobal(corner);
    Equipment.toPanel(corner);
    lists.itemList.localToGlobal(rows);
    Equipment.toPanel(rows);
-   left = corner.x + 2;
-   top = rows.y + 2;
-   right = Equipment.rowsEdge().right - 2;
+   left = corner.x + 6;
+   top = rows.y - Equipment.FIXED_HEAD;
+   right = Equipment.rowsEdge().right - Equipment.WINDOW_INSET * Equipment.squash;
    bottom = Equipment.barTop() - Equipment.MARGIN;
    if(name != undefined)
    {
-      cardTop = Equipment.partBox(name,Equipment.under).yMin - 6;
-      if(cardTop > top + 2 * Equipment.PREVIEW_LEAST && cardTop < bottom)
+      nameTop = Equipment.partBox(name,Equipment.under).yMin;
+      if(nameTop > top + 2 * Equipment.PREVIEW_LEAST && nameTop < bottom + Equipment.FIXED_NAME_ABOVE + Equipment.FIXED_CARD_GAP)
       {
-         bottom = cardTop;
+         bottom = nameTop - Equipment.FIXED_NAME_ABOVE - Equipment.FIXED_CARD_GAP;
       }
    }
    room = bottom - top;
@@ -163,7 +168,8 @@ Equipment.placeFixed = function()
       skse.Log("PANELTEST fixed: frame not measured, left " + Math.round(left) + " right " + Math.round(right) + " top " + Math.round(top) + " bottom " + Math.round(bottom) + " - window left as it was");
       return undefined;
    }
-   window.preview = Math.max(30,Math.min(Equipment.FIXED_PREVIEW,room - under));
+   most = Math.max(Equipment.PREVIEW_LEAST + under,room - Equipment.FIXED_SLACK);
+   window.preview = Math.max(30,Math.min(Equipment.FIXED_PREVIEW,most - under));
    Equipment.drawWindow(window.preview + under);
    window.above = false;
    window.clamped = window.high > room || wideP > right - left;
@@ -171,7 +177,7 @@ Equipment.placeFixed = function()
    window._y = Math.max(top,Math.min(bottom - window.high,top + (room - window.high) * Equipment.settings.fixY / 100));
    window.rowEdge = window._y;
    window.rowMiddle = window._y + window.high / 2;
-   skse.Log("PANELTEST fixed: frame x " + Math.round(left) + ".." + Math.round(right) + " y " + Math.round(top) + ".." + Math.round(bottom) + " (card text top " + (cardTop != undefined ? Math.round(cardTop) : "none") + "), room " + Math.round(room) + ", stats " + Math.round(under) + ", window " + Math.round(wideP) + " x " + Math.round(window.high) + " at " + Math.round(window._x) + "," + Math.round(window._y) + " (sideways " + Equipment.settings.fixX + ", up and down " + Equipment.settings.fixY + ")");
+   skse.Log("PANELTEST fixed: frame x " + Math.round(left) + ".." + Math.round(right) + " y " + Math.round(top) + ".." + Math.round(bottom) + " (list origin y " + Math.round(rows.y) + ", name text top " + (nameTop != undefined ? Math.round(nameTop) : "none") + "), room " + Math.round(room) + ", stats " + Math.round(under) + ", window " + Math.round(wideP) + " x " + Math.round(window.high) + " at " + Math.round(window._x) + "," + Math.round(window._y) + " (sideways " + Equipment.settings.fixX + ", up and down " + Equipment.settings.fixY + ")");
 };
 '''
 
