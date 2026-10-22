@@ -53,7 +53,7 @@ DLL. Thanks to emberchain for Atelier and for the permission.
 Version: `VERSION` (stamped by the version gate). Tools GPL-3.0-or-later (`LICENSE`); the art is
 Nithog's (`NOTICE.md`).
 
-## The Inventory Reforged options (1.0.5+)
+## The Inventory Reforged options (1.1.0+)
 
 For players of [Inventory Reforged for SkyUI](https://www.nexusmods.com/skyrimspecialedition/mods/195826): the installer's
 last page offers two choices. **Inventory Reforged - Norden Black colours** installs that mod's own default settings file
@@ -64,6 +64,6 @@ panel already follows the skin. No art or code of that mod is shipped. **Invento
 sizes its item window's 3D item from the game's 3D-item position at first open, and the layouts of Norden UI's installer
 set that position for Norden's own item card. Norden UI - Black must have a higher priority than Inventory Reforged.
 
-A third choice, **Inventory Reforged - panel fixes** (one per version, 1.2.4 or 1.3.0) (optional), replaces that
+A third choice, **Inventory Reforged - panel fixes** (Inventory Reforged 1.4.0) (optional), replaces that
 mod's `panel.swf` with a copy in which two scripts (DoAction_21, 22) changed (made by `tools/ir-preview-patch.py`; the file is
 not in the repository): the 3D item is aimed at the middle of the part of the item window above its stats and sized to fit it, and the settings popup gets an Item preview section (Size, Sideways, Up and down, Reset) when the character is off; the Character button stays at the bottom; Norden's own item card stays untouched in the skin's place instead of being restyled and moved by Inventory Reforged; the item window can be set to a fixed place inside the item list (Fixed place, Sideways, Up and down in the cog popup).

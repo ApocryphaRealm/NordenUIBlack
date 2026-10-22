@@ -1,5 +1,5 @@
-r"""Inventory Reforged for SkyUI 1.2.4 and 1.3.0 - a larger, centred, fitted item preview with its own size and place
-controls, and the skin's own item card left alone (Norden UI - Black 1.0.5, 2026-10-21).
+r"""Inventory Reforged for SkyUI 1.2.4, 1.3.0 and 1.4.0 - a larger, centred, fitted item preview with its own size and place
+controls, and the skin's own item card left alone (Norden UI - Black 1.1.0, 2026-10-22).
 
 Why: Inventory Reforged's item window keeps its 3D item in a box of PREVIEW_HEIGHT = 130 stage units at the top of the
 window and asks the plugin (PlacePreview) for an item (130 - 2 * WINDOW_PAD) / screen height tall. Under Norden UI the
@@ -19,7 +19,7 @@ What this changes (ONE script of panel.swf, DoAction_22, and nothing else):
     takes only its known keys, so no new key could be saved without changing the DLL. With the character on those
     numbers drive the character as before and the item preview uses the defaults (100, middle).
 
-The file must be Inventory Reforged 1.2.4's or 1.3.0's panel.swf (SHA-256 in extras/inventory-reforged/panel-<version>.sha256,
+The file must be Inventory Reforged 1.2.4's, 1.3.0's or 1.4.0's panel.swf (SHA-256 in extras/inventory-reforged/panel-<version>.sha256,
 found by hash); the result is re-decompiled and the tool refuses it unless only DoAction_21.as and DoAction_22.as differ and
 the edits are all there. Item card: Inventory Reforged takes the menu's own item card (Norden's: itemcard.swf and its
 deardiary_dm\\inventory\\itemcard_N_BG.swf art) into its window - it hides the card's background art and Stolen text, adds a
@@ -35,9 +35,22 @@ import argparse, hashlib, os, shutil, subprocess, sys, tempfile
 
 FF = r"C:\Program Files (x86)\FFDec\ffdec-cli.exe"
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# The scripts of panel.swf are numbered in the order of the source's parts; 1.4.0 added parts, so the numbers moved.
+# window = the item window (36-window.as), hero = the Character drawer (38-hero.as), look = the settings popup (38-look.as)
+VERSIONS = {
+    "1.2.4": {"window": "DoAction_18", "hero": "DoAction_21", "look": "DoAction_22"},
+    "1.3.0": {"window": "DoAction_18", "hero": "DoAction_21", "look": "DoAction_22"},
+    "1.4.0": {"window": "DoAction_19", "hero": "DoAction_22", "look": "DoAction_23"},
+}
+# a version whose panel.swf is not on disk is read from its archive (read only, never executed)
+SRC_ZIPS = {
+    "1.3.0": r"D:\Claude output\9. quarantine\InventoryReforged-1.3.0\InventoryReforged 1.3.0 195826.zip",
+    "1.4.0": r"D:\Claude output\9. quarantine\InventoryReforged-1.4.0\InventoryReforged 1.4.0 195826.zip",
+}
 SRC_DEFAULTS = {
     "1.2.4": os.environ.get("NORDEN_IR_PANEL_124", r"D:\Modlists\Njordlinger\mods\Inventory Reforged for SkyUI\Interface\InventoryReforged\panel.swf"),
-    "1.3.0": os.environ.get("NORDEN_IR_PANEL_130", r"D:\Claude output\6. current wip mods\InventoryReforgedDiag\upstream\core\Interface\InventoryReforged\panel.swf"),
+    "1.3.0": os.environ.get("NORDEN_IR_PANEL_130", ""),
+    "1.4.0": os.environ.get("NORDEN_IR_PANEL_140", ""),
 }
 
 NEW_FUNCTIONS = '''
@@ -309,11 +322,17 @@ EDITS_21 = [
 # The card then stays where the skin puts it (Norden's Slimventory layout: below the item list) at its own size, and the
 # window reserves a fixed room (CARD_ROOM stage units) where the card used to be, which the item preview now uses.
 CARD_ROOM = "150"
+# 1.4.0 lets the item window wear the card's own frame (the card's background art stretched to the window) and grows the
+# card's frame for chests; with Norden's card left alone the window keeps its own plain sheet and adds no frame edge
+FRAME_FUNCTIONS = "Equipment.frameWindow = function()\n{\n   return false;\n};\nEquipment.frameEdge = function()\n{\n   return 0;\n};\n"
+AIM_FOUR = ("PlacePreview(middle.x,middle.y,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height);",
+            "PlacePreview(middle.x,middle.y,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height);")
 CARD_FUNCTIONS = [
     ("sizeWindow", [("   card._yscale = window.wide / Equipment.cardWidth() * 100;\n", "")]),
     ("windowUnits", [("   card._xscale = card._yscale * across / Equipment.squash;\n", "")]),
     ("placeWindow", [("   card._x = at.x;\n   card._y = at.y;\n", ""),
-                     ("   menu.itemCard.background._visible = false;\n   menu.itemCard.StolenTextInstance._visible = false;\n", ""),
+                     ("   menu.itemCard.background._visible = false;\n   menu.itemCard.StolenTextInstance._visible = false;\n", "?"),
+                     ("      menu.itemCard.background._visible = false;\n      menu.itemCard.StolenTextInstance._visible = false;\n", "?"),
                      ("   Equipment.layKind();\n", ""),
                      ("   else\n   {\n      rowTop = {x:0,y:row._y};", "   else if(Equipment.fixedOn())\n   {\n      Equipment.placeFixed();\n   }\n   else\n   {\n      rowTop = {x:0,y:row._y};")]),
     ("cardSpan", None),
@@ -371,9 +390,16 @@ def patch_one(version, src, outdir):
     class a:
         pass
     a.src, a.out = src, outdir
-    if not os.path.isfile(a.src):
-        sys.exit(f"FAIL panel.swf not found: {a.src}")
+    cfg = VERSIONS[version]
     want = open(os.path.join(HERE, "extras", "inventory-reforged", f"panel-{version}.sha256")).read().split()[0]
+    if not a.src and version in SRC_ZIPS and os.path.isfile(SRC_ZIPS[version]):
+        import zipfile
+        z = zipfile.ZipFile(SRC_ZIPS[version])
+        data = z.read("core/Interface/InventoryReforged/panel.swf")
+        a.src = os.path.join(tempfile.mkdtemp(prefix="irsrc-"), "panel.swf")
+        open(a.src, "wb").write(data)
+    if not a.src or not os.path.isfile(a.src):
+        sys.exit(f"FAIL panel.swf of Inventory Reforged {version} not found: {a.src or '(no path, no archive)'}")
     if sha(a.src) != want:
         sys.exit(f"FAIL {a.src} is not Inventory Reforged {version}'s panel.swf (SHA-256 {sha(a.src)} != {want})")
     tmp = tempfile.mkdtemp(prefix="irpatch-")
@@ -383,14 +409,19 @@ def patch_one(version, src, outdir):
         shutil.copy2(a.src, orig)
         ff("-export", "script", os.path.join(tmp, "as_a"), orig)
         imp = os.path.join(tmp, "imp", "scripts", "frame_1"); os.makedirs(imp)
-        for name, edits, tail in (("DoAction_22", EDITS_22, NEW_FUNCTIONS), ("DoAction_21", EDITS_21, "")):
+        window_text = open(os.path.join(tmp, "as_a", "scripts", "frame_1", cfg["window"] + ".as"), encoding="utf-8").read().replace("\r\n", "\n")
+        four = "Equipment.frameWindow = function(" in window_text
+        for name, edits, tail in ((cfg["look"], EDITS_22, NEW_FUNCTIONS), (cfg["hero"], EDITS_21, "")):
             text = open(os.path.join(tmp, "as_a", "scripts", "frame_1", name + ".as"), encoding="utf-8").read().replace("\r\n", "\n")
             for old, new in edits:
                 if text.count(old) != 1:
                     sys.exit(f"FAIL an edit target in {name} is not there exactly once: {old[:70]!r}")
                 text = text.replace(old, new)
-            if name == "DoAction_22":
-                tail = tail + card_functions(open(os.path.join(tmp, "as_a", "scripts", "frame_1", "DoAction_18.as"), encoding="utf-8").read().replace("\r\n", "\n"))
+            if name == cfg["look"]:
+                if four:
+                    assert tail.count(AIM_FOUR[0]) == 1
+                    tail = tail.replace(AIM_FOUR[0], AIM_FOUR[1])
+                tail = tail + card_functions(window_text) + (FRAME_FUNCTIONS if four else "")
             text = text.rstrip("\n") + "\n" + tail
             open(os.path.join(imp, name + ".as"), "w", encoding="utf-8", newline="\n").write(text)
         out_swf = os.path.join(tmp, "panel_patched.swf")
@@ -405,20 +436,20 @@ def patch_one(version, src, outdir):
                 pb = os.path.join(tmp, "as_b", os.path.relpath(pa, os.path.join(tmp, "as_a")))
                 if open(pa, encoding="utf-8").read() != open(pb, encoding="utf-8").read():
                     diffs.append(f)
-        if sorted(diffs) != ["DoAction_21.as", "DoAction_22.as"]:
-            sys.exit(f"FAIL scripts that differ: {diffs} (only DoAction_21 and 22 may)")
-        got = open(os.path.join(tmp, "as_b", "scripts", "frame_1", "DoAction_22.as"), encoding="utf-8").read()
+        if sorted(diffs) != sorted([cfg["hero"] + ".as", cfg["look"] + ".as"]):
+            sys.exit(f"FAIL scripts that differ: {diffs} (only {cfg['hero']} and {cfg['look']} may)")
+        got = open(os.path.join(tmp, "as_b", "scripts", "frame_1", cfg["look"] + ".as"), encoding="utf-8").read()
         for needle in ("Equipment.aimPreview = function()", "Equipment.previewTune = function()",
                        'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
             if needle not in got:
                 sys.exit(f"FAIL the patched script lacks: {needle}")
-        for name, needle in (("DoAction_21", "tab._y = 0;"), ("DoAction_22", "Equipment.placeFixed = function()"), ("DoAction_22", "Equipment.CARD_ROOM"),
-                             ("DoAction_22", "Equipment.keepFrameHidden = function()"), ("DoAction_22", "return text;")):
+        for name, needle in ((cfg["hero"], "tab._y = 0;"), (cfg["look"], "Equipment.placeFixed = function()"), (cfg["look"], "Equipment.CARD_ROOM"),
+                             (cfg["look"], "Equipment.keepFrameHidden = function()"), (cfg["look"], "return text;")):
             if needle not in open(os.path.join(tmp, "as_b", "scripts", "frame_1", name + ".as"), encoding="utf-8").read():
                 sys.exit(f"FAIL {name} lacks: {needle}")
         os.makedirs(a.out, exist_ok=True)
         shutil.copy2(out_swf, os.path.join(a.out, "panel.swf"))
-        print(f"ok  IR {version}  {os.path.join(a.out, 'panel.swf')}  sha256 {sha(out_swf)}  (only DoAction_21 and 22 differ)")
+        print(f"ok  IR {version}  {os.path.join(a.out, 'panel.swf')}  sha256 {sha(out_swf)}  (only {cfg["hero"]} and {cfg["look"]} differ)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

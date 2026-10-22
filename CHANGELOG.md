@@ -1,7 +1,25 @@
 # Changelog - Norden UI - Black
 
 
-## 1.0.5 - 2026-10-21 - untested
+## 1.1.0 - 2026-10-22 - untested
+
+### Changed (Inventory Reforged 1.4.0, 2026-10-22)
+- **Inventory Reforged 1.4.0** (released after 1.3.0; the owner: "install the new update and add our list of changes to it"). The panel option is
+  rebuilt for 1.4.0's panel.swf (SHA-256 c84efeca...) and is now the only one shipped: 1.2.4 and 1.3.0 are two releases behind (the
+  patch tool still builds and checks them: `python tools/ir-preview-patch.py --version 1.3.0`). What 1.4.0 changed in the code our
+  edits touch (read from its source against 1.3.0): the item window now lies over the card in a layer of its own and wears the
+  card's own frame (the card's background art cut into top, slice and bottom copies and stretched to the window), grows the
+  card's frame for chests, holds back a row's 3D model until the window is up (windowShow other than 'at once'), lays out less
+  while the list scrolls, passes a fourth number to PlacePreview, and adds follower tabs, a mod-origin line and a quest line
+  switch (new keys bCompanionTabs, bModOrigin, bQuestLine). The scripts moved (window DoAction_19, Character drawer
+  DoAction_22, settings popup DoAction_23), so the tool now takes the script names per version. Our edits port as they were:
+  the item preview fit and ITEM PREVIEW controls, the bottom CHARACTER button, Norden's own item card kept in place (the same
+  seven functions, plus frameWindow and frameEdge now return false and 0 so the window keeps its own plain sheet and the card's
+  background art is never borrowed, hidden or stretched) and Fixed place with the calibrated bounds. The [Doll] keys we reuse
+  (iScale, iShiftRight, iShiftUp, fTurnSpeed) and [Look] iAccentColor / iTextColor are unchanged in 1.4.0; nothing in it makes an
+  edit unnecessary - the item card still moves, rescales and hides with the window unless it is told not to.
+- The colours option's ini now holds only the two [Look] colours (it was a full copy of 1.2.4's ini, which lacks 1.4.0's new keys):
+  every other setting keeps the plugin's built-in default, whatever version is installed.
 
 ### Added
 - **Inventory Reforged for SkyUI** (Nexus 195826) - two new options on the installer's last page (the owner, 2026-10-21:

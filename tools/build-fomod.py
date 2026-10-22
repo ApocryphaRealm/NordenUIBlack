@@ -250,7 +250,7 @@ https://www.gnu.org/licenses/gpl-3.0.txt). theme.ini holds the Norden UI - Black
 To go back to stock Atelier, untick the option (or delete these files) and let RaceMenu Atelier's own DLL win.
 """
 
-# Inventory Reforged for SkyUI (1.0.5, the owner 2026-10-21: "adding support in Norden Black to have it recoloured").
+# Inventory Reforged for SkyUI (1.1.0, the owner 2026-10-21: "adding support in Norden Black to have it recoloured").
 # Inventory Reforged (Nexus 195826) is open: its page lets anyone use, change, convert, reupload and include any part
 # of it in their own mods, free or not, without asking, credit welcome (read 2026-10-21 from its description). Even so
 # this option ships NO changed Inventory Reforged art or code: the mod reads two colours from its own INI
@@ -266,9 +266,9 @@ ET.SubElement(_irp, "description").text = (
     "Only if you use Inventory Reforged for SkyUI (Nexus 195826). Its gold accent and parchment text become Norden UI - "
     "Black's silver (#BBBDBF) and soft white (#E5E5E5): frames, headings, numbers, tabs and names of the equipment "
     "panel. Everything else in the panel (its black sheet, edges, buttons) already follows the skin it sits on, so it is "
-    "black under Norden UI - Black. Installs SKSE\\Plugins\\InventoryReforged.ini, Inventory Reforged's own default "
-    "settings file with only those two colours changed - no art and no code of Inventory Reforged is included. What you "
-    "set in its own menu (MCM) still wins, key by key; delete the file to get its gold back. Give Norden UI - Black a "
+    "black under Norden UI - Black. Installs SKSE\\Plugins\\InventoryReforged.ini holding only those two colours - every other setting keeps Inventory Reforged's "
+    "own default; no art and no code of Inventory Reforged is included. What you set in its own menu (MCM) still wins, key by "
+    "key; delete the file to get its gold back. Give Norden UI - Black a "
     "higher priority than Inventory Reforged so this file wins.")
 ET.SubElement(ET.SubElement(_irp, "files"), "folder", {"source": "Inventory Reforged", "destination": "", "priority": "0"})
 _irt = ET.SubElement(ET.SubElement(_irp, "typeDescriptor"), "dependencyType")
@@ -291,7 +291,9 @@ ET.SubElement(_irq, "description").text = (
 ET.SubElement(ET.SubElement(_irq, "files"), "folder", {"source": "Inventory Reforged preview", "destination": "", "priority": "0"})
 ET.SubElement(ET.SubElement(_irq, "typeDescriptor"), "type", {"name": "Optional"})
 IR_PANELS = {}   # version -> (patched panel.swf from tools/ir-preview-patch.py, folder in the package)
-for _v, _folder in (("1.2.4", "Inventory Reforged panel 1.2.4"), ("1.3.0", "Inventory Reforged panel 1.3.0")):
+# Inventory Reforged 1.4.0 is the one shipped: the owner moved to it and 1.2.4 / 1.3.0 are two releases behind. The patch tool still
+# builds and checks 1.2.4 and 1.3.0 (python tools/ir-preview-patch.py --version 1.3.0) should an option for them be wanted again.
+for _v, _folder in (("1.4.0", "Inventory Reforged panel 1.4.0"),):
     _f = os.path.join(BUILD, "ir-panel", _v, "Interface", "InventoryReforged", "panel.swf")
     if not os.path.isfile(_f):
         fail(f"patched Inventory Reforged {_v} panel.swf missing: {_f} - run tools/ir-preview-patch.py first")
@@ -328,8 +330,8 @@ for _v, (_f, _folder) in IR_PANELS.items():
     ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
 IR_NOTE = """Inventory Reforged for SkyUI - what Norden UI - Black's option installs
 
-SKSE\\Plugins\\InventoryReforged.ini is the default settings file of Inventory Reforged for SkyUI 1.2.4
-(https://www.nexusmods.com/skyrimspecialedition/mods/195826) with two numbers changed in [Look]:
+SKSE\\Plugins\\InventoryReforged.ini is a settings file of Inventory Reforged for SkyUI (any version)
+(https://www.nexusmods.com/skyrimspecialedition/mods/195826) holding only two numbers in [Look]; every other setting keeps the mod's own default:
   iAccentColor 14069864 (gold)       -> 12303807 (#BBBDBF, Norden's silver)
   iTextColor   15130824 (parchment)  -> 15066597 (#E5E5E5, Norden Black's text)
 Inventory Reforged's page allows using, changing, converting, reuploading and including any part of the mod in your
@@ -538,12 +540,12 @@ Atelier - so this DLL wins. Delete theme.ini for Atelier's own colours; untick t
 RaceMenu Atelier is GPL-3.0; the build is RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]} (see NOTICE.md and
 docs\\RaceMenu Atelier - Norden UI - Black build.txt).
 
-Inventory Reforged (optional, 1.0.5): for players who use Inventory Reforged for SkyUI (Nexus 195826). Its gold accent and
+Inventory Reforged (optional, 1.1.0): for players who use Inventory Reforged for SkyUI (Nexus 195826). Its gold accent and
 parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the rest of its panel already follows the skin,
-so it is black under Norden UI - Black. The option is that mod's own default settings file with only those two colours
-changed (SKSE\\Plugins\\InventoryReforged.ini) - no art or code of Inventory Reforged. Its menu settings still win. A second,
+so it is black under Norden UI - Black. The option is a settings file holding only those two colours
+(SKSE\\Plugins\\InventoryReforged.ini; every other setting keeps the mod's own default) - no art or code of Inventory Reforged. Its menu settings still win. A second,
 unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
-Inventory Reforged's item window is small. A third, unticked choice (one per Inventory Reforged version, 1.2.4 or 1.3.0), "panel fixes", replaces its panel.swf with a copy where two scripts changed: the item preview, the Character button staying at the bottom, and Norden's own item card left alone (allowed by that mod's page).
+Inventory Reforged's item window is small. A third, unticked choice (Inventory Reforged 1.4.0), "panel fixes", replaces its panel.swf with a copy where two scripts changed: the item preview, the Character button staying at the bottom, and Norden's own item card left alone (allowed by that mod's page).
 Give Norden UI - Black a higher priority than Inventory Reforged.
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.
