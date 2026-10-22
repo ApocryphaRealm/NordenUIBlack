@@ -74,6 +74,89 @@ Equipment.aimPreview = function()
       Equipment.plugin().PlacePreview(middle.x,middle.y,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height);
    }
 };
+Equipment.FIXED_PREVIEW = 260;
+Equipment.FIXED_BASE = 0.8;
+Equipment.FIXED_STEP = 0.002;
+Equipment.LOOK_STEPS.fixX = {id:"fTurnSpeed:Doll",step:10,least:0,most:100};
+Equipment.LOOK_STEPS.fixY = {id:"fTurnSpeed:Doll",step:10,least:0,most:100};
+Equipment.fixedRead = function()
+{
+   var v = Equipment.number(Equipment.settings.turnSpeed);
+   var fixed = Equipment.settings.doll != true && v > Equipment.FIXED_BASE - 0.01 && v < Equipment.FIXED_BASE + 0.25;
+   var n = fixed ? Math.round((v - Equipment.FIXED_BASE) / Equipment.FIXED_STEP) : 115;
+   var across = Math.floor(n / 11);
+   Equipment.settings.fixOn = fixed;
+   Equipment.settings.fixX = across * 10;
+   Equipment.settings.fixY = (n - across * 11) * 10;
+};
+Equipment.fixedOn = function()
+{
+   Equipment.fixedRead();
+   return Equipment.settings.fixOn == true;
+};
+Equipment.fixedWrite = function()
+{
+   var v = Equipment.FIXED_BASE + Equipment.FIXED_STEP * (Math.round(Equipment.settings.fixX / 10) * 11 + Math.round(Equipment.settings.fixY / 10));
+   Equipment.settings.turnSpeed = v;
+   Equipment.tellSetting("fTurnSpeed:Doll",v);
+   Equipment.fixedRead();
+};
+Equipment.setFixed = function(on)
+{
+   if(on)
+   {
+      Equipment.settings.fixX = 100;
+      Equipment.settings.fixY = 50;
+      Equipment.fixedWrite();
+   }
+   else
+   {
+      Equipment.settings.turnSpeed = 0.5;
+      Equipment.tellSetting("fTurnSpeed:Doll",0.5);
+      Equipment.fixedRead();
+   }
+};
+Equipment.fixedSync = function()
+{
+   var v = Equipment.number(Equipment.settings.turnSpeed);
+   if(Equipment.settings.doll == true && v > Equipment.FIXED_BASE - 0.01 && v < Equipment.FIXED_BASE + 0.25)
+   {
+      Equipment.settings.turnSpeed = 0.5;
+      Equipment.tellSetting("fTurnSpeed:Doll",0.5);
+   }
+   Equipment.fixedRead();
+};
+Equipment.placeFixed = function()
+{
+   var window = Equipment.window;
+   var lists = Equipment.menu.inventoryLists;
+   var bounds = lists.getContentBounds();
+   var left = (lists._x + bounds[0]) * Equipment.squash;
+   var right = Equipment.rowsEdge().right;
+   var top = lists._y + bounds[1];
+   var bottom = top + bounds[3];
+   var name = Equipment.menu.itemCard.ItemText;
+   var under = Equipment.underCard();
+   var cardTop;
+   var room;
+   if(name != undefined)
+   {
+      cardTop = Equipment.partBox(name,Equipment.under).yMin - 6;
+      if(cardTop > top + 2 * Equipment.PREVIEW_LEAST && cardTop < bottom)
+      {
+         bottom = cardTop;
+      }
+   }
+   room = bottom - top;
+   window.preview = Math.max(Equipment.PREVIEW_LEAST,Math.min(Equipment.FIXED_PREVIEW,room - under));
+   Equipment.drawWindow(window.preview + under);
+   window.above = false;
+   window.clamped = window.high > room;
+   window._x = left + Math.max(0,right - left - Equipment.windowWide()) * Equipment.settings.fixX / 100;
+   window._y = top + Math.max(0,room - window.high) * Equipment.settings.fixY / 100;
+   window.rowEdge = window._y;
+   window.rowMiddle = window._y + window.high / 2;
+};
 '''
 
 # (old, new) - each old text must occur exactly once in DoAction_22.as
@@ -105,6 +188,7 @@ Equipment.flipLook = function(key)'''),
       Equipment.showPlayer();
 ''', '''      Equipment.changeSetting("doll","bShow:Doll",Equipment.settings.doll != true);
       Equipment.showPlayer();
+      Equipment.fixedSync();
       Equipment.aimPreview();
       Equipment.makeLook();
 '''),
@@ -114,6 +198,74 @@ Equipment.flipLook = function(key)'''),
    Equipment.showPlayer();
    Equipment.aimPreview();
 '''),
+]
+EDITS_22 += [
+    ("""   var sheet = Equipment.look;
+   var pad = Equipment.LOOK_PAD;
+   var wide = Equipment.LOOK_WIDE;
+""", """   var sheet = Equipment.look;
+   var pad = Equipment.LOOK_PAD;
+   var wide = Equipment.LOOK_WIDE;
+   Equipment.fixedRead();
+"""),
+    ("""   y += Equipment.lookHead(sheet,Equipment.say("Item window"),pad,y,inner);
+""", """   y += Equipment.lookHead(sheet,Equipment.say("Item window"),pad,y,inner);
+   if(Equipment.settings.doll != true)
+   {
+      y += Equipment.lookCheck(sheet,"fixed",Equipment.say("Fixed place"),undefined,pad,y,inner,Equipment.LOOK_LINE);
+      if(Equipment.settings.fixOn)
+      {
+         y += Equipment.lookStepper(sheet,"fixX",Equipment.say("Sideways"),"across",pad,y,inner);
+         y += Equipment.lookStepper(sheet,"fixY",Equipment.say("Up and down"),"upward",pad,y,inner);
+      }
+   }
+"""),
+    ("""      case "listWidth":
+         return [""", """      case "fixX":
+         return value <= 0 ? Equipment.say("Left") : (value >= 100 ? Equipment.say("Right") : Equipment.say("#%",value));
+      case "fixY":
+         return value <= 0 ? Equipment.say("Top") : (value >= 100 ? Equipment.say("Bottom") : Equipment.say("#%",value));
+      case "listWidth":
+         return ["""),
+    ("""Equipment.lookOn = function(key)
+{
+   if(key == "doll")""", """Equipment.lookOn = function(key)
+{
+   if(key == "fixed")
+   {
+      return Equipment.fixedOn();
+   }
+   if(key == "doll")"""),
+    ("""   else
+   {
+      Equipment.flipSlot(Equipment.SLOTS[Number(key.substr(4))]);
+   }
+""", """   else if(key == "fixed")
+   {
+      Equipment.setFixed(!Equipment.fixedOn());
+      Equipment.makeLook();
+      Equipment.showWindow();
+   }
+   else
+   {
+      Equipment.flipSlot(Equipment.SLOTS[Number(key.substr(4))]);
+   }
+"""),
+    ("""   Equipment.changeSetting(key,Equipment.LOOK_STEPS[key].id,value);
+   if(key == "listWidth")""", """   if(key == "fixX" || key == "fixY")
+   {
+      Equipment.settings[key] = value;
+      Equipment.fixedWrite();
+      Equipment.showWindow();
+      Equipment.showLookValues();
+      gfx.io.GameDelegate.call("PlaySound",["UIMenuFocus"]);
+      return undefined;
+   }
+   Equipment.changeSetting(key,Equipment.LOOK_STEPS[key].id,value);
+   if(key == "listWidth")"""),
+    ("""   var quiet = line.key != "listWidth" && Equipment.settings.doll != true;
+""", """   var quiet = false;
+"""),
 ]
 
 # DoAction_21 (the Character drawer): its tab stays at the bottom of the screen; the drawer opens above it.
@@ -140,7 +292,8 @@ CARD_FUNCTIONS = [
     ("windowUnits", [("   card._xscale = card._yscale * across / Equipment.squash;\n", "")]),
     ("placeWindow", [("   card._x = at.x;\n   card._y = at.y;\n", ""),
                      ("   menu.itemCard.background._visible = false;\n   menu.itemCard.StolenTextInstance._visible = false;\n", ""),
-                     ("   Equipment.layKind();\n", "")]),
+                     ("   Equipment.layKind();\n", ""),
+                     ("   else\n   {\n      rowTop = {x:0,y:row._y};", "   else if(Equipment.fixedOn())\n   {\n      Equipment.placeFixed();\n   }\n   else\n   {\n      rowTop = {x:0,y:row._y};")]),
     ("cardSpan", None),
     # 1.3.0 shows the card only while its window is up; the skin's card is always up
     ("showWindow", [("   Equipment.menu.itemCard._parent._visible = Equipment.window._visible;\n", "?")]),
@@ -156,7 +309,7 @@ def card_functions(source):
         j = source.index("\n};\n", i) + 4
         body = source[i:j]
         if edits is None:
-            body = "Equipment.cardSpan = function()\n{\n   return {top:0,bottom:Equipment.CARD_ROOM};\n};\n"
+            body = "Equipment.cardSpan = function()\n{\n   return {top:0,bottom:Equipment.anchorSlot == undefined && Equipment.fixedOn() ? 0 : Equipment.CARD_ROOM};\n};\n"
         elif isinstance(edits, str):
             body = edits
         else:
@@ -237,7 +390,7 @@ def patch_one(version, src, outdir):
                        'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
             if needle not in got:
                 sys.exit(f"FAIL the patched script lacks: {needle}")
-        for name, needle in (("DoAction_21", "tab._y = 0;"), ("DoAction_22", "return {top:0,bottom:Equipment.CARD_ROOM};"),
+        for name, needle in (("DoAction_21", "tab._y = 0;"), ("DoAction_22", "Equipment.placeFixed = function()"), ("DoAction_22", "Equipment.CARD_ROOM"),
                              ("DoAction_22", "Equipment.keepFrameHidden = function()"), ("DoAction_22", "return text;")):
             if needle not in open(os.path.join(tmp, "as_b", "scripts", "frame_1", name + ".as"), encoding="utf-8").read():
                 sys.exit(f"FAIL {name} lacks: {needle}")

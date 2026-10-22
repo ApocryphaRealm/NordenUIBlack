@@ -58,6 +58,20 @@
     room for it, which is exactly the modification Norden's card must not get; IR's window keeps its own quiet tags.
     There is one option per Inventory Reforged version (1.2.4 and 1.3.0, each a SHA-256-locked panel.swf; a group that takes
     at most one); tools/ir-preview-patch.py builds both and refuses any other file.
+    A fourth change (the owner, 2026-10-21: "a setting for determining where the item preview window appears so that it
+    doesn't follow the cursor ... left and right sliders ... within the bounds of the inventory list"; at row 1 the window
+    covered Norden's card by ~25 px and, flipped above a row, the loadout bar and the filter gear): the cog popup's Item
+    window section gets "Fixed place" (with the character off) and, when it is on, Sideways and Up and down in steps of 10
+    percent. Fixed, `placeFixed` puts the window inside the item list's frame (`getContentBounds` of the inventory lists, the
+    rows' right edge, and above the card text's top), sizes the preview to the room left under the stats (up to 260 units)
+    and fits the item in it; Sideways 0 is the list's left edge, 100 its right edge (the old resting place); Up and down 0
+    is the top. It is off by default, so nothing changes for anyone who does not tick it; a player who wants Fixed from
+    the start ticks it once. Persistence: Inventory Reforged's setter writes any key (the plugin source), but only its
+    known keys can be read back by the panel, so the choice and the two positions are packed into [Doll] fTurnSpeed (read
+    back as `turnSpeed`; the doll's turn speed, which does nothing while the character is hidden): 0.5 (the default)
+    is Follow the row; 0.800 + 0.002 x (sideways step x 11 + up/down step) is Fixed, at most 1.04. Switching the character
+    on puts it back to 0.5. The ITEM PREVIEW and Fixed controls are no longer dimmed while the character is off (the stock
+    popup dimmed the character rows then).
 
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
   "Norden default 3D item position 1.1" file.
