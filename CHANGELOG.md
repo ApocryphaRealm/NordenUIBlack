@@ -71,6 +71,10 @@
     is Follow the row; 0.800 + 0.002 x (sideways step x 11 + up/down step) is Fixed, at most 1.04. Switching the character
     on puts it back to 0.5. The ITEM PREVIEW and Fixed controls are no longer dimmed while the character is off (the stock
     popup dimmed the character rows then).
+    Round 4: the list background clip is not the frame under Norden (its shape spans the whole panel), so the bounds are now the
+    list's own anchors: left at the lists' panel origin, top at the item list's origin, right at the rows' right edge (the
+    stock window anchor), bottom above the card text (else above the bottom bar); the window is cut to that room and every
+    placement logs a PANELTEST fixed line to the SKSE log with the bounds, room and window size.
 
 - build-fomod.py builds both from `extras/inventory-reforged/InventoryReforged.ini` and Norden UI's own
   "Norden default 3D item position 1.1" file.

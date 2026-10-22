@@ -130,26 +130,25 @@ Equipment.placeFixed = function()
 {
    var window = Equipment.window;
    var lists = Equipment.menu.inventoryLists;
-   var frame = lists.panelContainer.ListBackground;
-   var box = frame != undefined ? frame.getBounds(Equipment.under) : undefined;
+   var corner = {x:0,y:0};
+   var rows = {x:0,y:0};
+   var name = Equipment.menu.itemCard.ItemText;
+   var under = Equipment.underCard();
+   var wideP = Equipment.windowWide();
    var left;
    var right;
    var top;
    var bottom;
-   var name = Equipment.menu.itemCard.ItemText;
-   var under = Equipment.underCard();
    var cardTop;
    var room;
-   var wideP;
-   if(box == undefined || box.xMax - box.xMin < 50 || box.yMax - box.yMin < 50)
-   {
-      Equipment.fixedFallback = true;
-      return undefined;
-   }
-   left = box.xMin + 2;
-   right = box.xMax - 2;
-   top = box.yMin + 2;
-   bottom = box.yMax - 2;
+   lists.panelContainer.localToGlobal(corner);
+   Equipment.toPanel(corner);
+   lists.itemList.localToGlobal(rows);
+   Equipment.toPanel(rows);
+   left = corner.x + 2;
+   top = rows.y + 2;
+   right = Equipment.rowsEdge().right - 2;
+   bottom = Equipment.barTop() - Equipment.MARGIN;
    if(name != undefined)
    {
       cardTop = Equipment.partBox(name,Equipment.under).yMin - 6;
@@ -159,7 +158,11 @@ Equipment.placeFixed = function()
       }
    }
    room = bottom - top;
-   wideP = Equipment.windowWide();
+   if(right - left < 100 || room < 100)
+   {
+      skse.Log("PANELTEST fixed: frame not measured, left " + Math.round(left) + " right " + Math.round(right) + " top " + Math.round(top) + " bottom " + Math.round(bottom) + " - window left as it was");
+      return undefined;
+   }
    window.preview = Math.max(30,Math.min(Equipment.FIXED_PREVIEW,room - under));
    Equipment.drawWindow(window.preview + under);
    window.above = false;
@@ -168,6 +171,7 @@ Equipment.placeFixed = function()
    window._y = Math.max(top,Math.min(bottom - window.high,top + (room - window.high) * Equipment.settings.fixY / 100));
    window.rowEdge = window._y;
    window.rowMiddle = window._y + window.high / 2;
+   skse.Log("PANELTEST fixed: frame x " + Math.round(left) + ".." + Math.round(right) + " y " + Math.round(top) + ".." + Math.round(bottom) + " (card text top " + (cardTop != undefined ? Math.round(cardTop) : "none") + "), room " + Math.round(room) + ", stats " + Math.round(under) + ", window " + Math.round(wideP) + " x " + Math.round(window.high) + " at " + Math.round(window._x) + "," + Math.round(window._y) + " (sideways " + Equipment.settings.fixX + ", up and down " + Equipment.settings.fixY + ")");
 };
 '''
 
