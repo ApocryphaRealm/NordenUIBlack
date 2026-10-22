@@ -130,15 +130,26 @@ Equipment.placeFixed = function()
 {
    var window = Equipment.window;
    var lists = Equipment.menu.inventoryLists;
-   var bounds = lists.getContentBounds();
-   var left = (lists._x + bounds[0]) * Equipment.squash;
-   var right = Equipment.rowsEdge().right;
-   var top = lists._y + bounds[1];
-   var bottom = top + bounds[3];
+   var frame = lists.panelContainer.ListBackground;
+   var box = frame != undefined ? frame.getBounds(Equipment.under) : undefined;
+   var left;
+   var right;
+   var top;
+   var bottom;
    var name = Equipment.menu.itemCard.ItemText;
    var under = Equipment.underCard();
    var cardTop;
    var room;
+   var wideP;
+   if(box == undefined || box.xMax - box.xMin < 50 || box.yMax - box.yMin < 50)
+   {
+      Equipment.fixedFallback = true;
+      return undefined;
+   }
+   left = box.xMin + 2;
+   right = box.xMax - 2;
+   top = box.yMin + 2;
+   bottom = box.yMax - 2;
    if(name != undefined)
    {
       cardTop = Equipment.partBox(name,Equipment.under).yMin - 6;
@@ -148,12 +159,13 @@ Equipment.placeFixed = function()
       }
    }
    room = bottom - top;
-   window.preview = Math.max(Equipment.PREVIEW_LEAST,Math.min(Equipment.FIXED_PREVIEW,room - under));
+   wideP = Equipment.windowWide();
+   window.preview = Math.max(30,Math.min(Equipment.FIXED_PREVIEW,room - under));
    Equipment.drawWindow(window.preview + under);
    window.above = false;
-   window.clamped = window.high > room;
-   window._x = left + Math.max(0,right - left - Equipment.windowWide()) * Equipment.settings.fixX / 100;
-   window._y = top + Math.max(0,room - window.high) * Equipment.settings.fixY / 100;
+   window.clamped = window.high > room || wideP > right - left;
+   window._x = Math.max(left,Math.min(right - wideP,left + (right - left - wideP) * Equipment.settings.fixX / 100));
+   window._y = Math.max(top,Math.min(bottom - window.high,top + (room - window.high) * Equipment.settings.fixY / 100));
    window.rowEdge = window._y;
    window.rowMiddle = window._y + window.high / 2;
 };

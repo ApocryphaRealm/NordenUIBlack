@@ -62,8 +62,7 @@
     doesn't follow the cursor ... left and right sliders ... within the bounds of the inventory list"; at row 1 the window
     covered Norden's card by ~25 px and, flipped above a row, the loadout bar and the filter gear): the cog popup's Item
     window section gets "Fixed place" (with the character off) and, when it is on, Sideways and Up and down in steps of 10
-    percent. Fixed, `placeFixed` puts the window inside the item list's frame (`getContentBounds` of the inventory lists, the
-    rows' right edge, and above the card text's top), sizes the preview to the room left under the stats (up to 260 units)
+    percent. Fixed, `placeFixed` puts the window inside the item list's frame (measured at run time: the list background clip's bounds in panel coordinates, cut above the card text's top; round 3 found the first version used the wrong coordinates, so the window was 555-585 px tall and spilled over the category icons, the loadout bar and the card), sizes the preview to the room left under the stats (up to 260 units, so the whole window is never taller than that room and all four edges are clamped inside it)
     and fits the item in it; Sideways 0 is the list's left edge, 100 its right edge (the old resting place); Up and down 0
     is the top. It is off by default, so nothing changes for anyone who does not tick it; a player who wants Fixed from
     the start ticks it once. Persistence: Inventory Reforged's setter writes any key (the plugin source), but only its
