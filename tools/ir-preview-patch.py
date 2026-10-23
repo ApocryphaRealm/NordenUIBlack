@@ -67,6 +67,7 @@ Equipment.previewTune = function()
    }
    return tune;
 };
+Equipment.FIXED_FIT = 0.94;
 Equipment.aimPreview = function()
 {
    var window = Equipment.window;
@@ -76,18 +77,42 @@ Equipment.aimPreview = function()
    var tune = Equipment.previewTune();
    var entry = Equipment.windowEntry();
    var fit = entry != undefined && (entry.formType == Equipment.WEAPON || entry.formType == Equipment.AMMO) ? Equipment.PREVIEW_FIT_LONG : Equipment.PREVIEW_FIT;
+   var fixed = Equipment.anchorSlot == undefined && Equipment.fixedOn();
    var middle;
+   var size;
+   var room;
+   var across;
+   var upward;
+   var reach;
    if(window.high > 0)
    {
       area = Math.max(high,window.high - Equipment.underCard());
    }
-   middle = Equipment.share(window._x + wide / 2 + tune.across * wide,window._y + area / 2 - tune.upward * area);
+   across = tune.across * wide;
+   upward = tune.upward * area;
+   size = Math.min(area,wide) * fit * tune.size;
+   room = size;
+   if(fixed)
+   {
+      room = Math.min(size,Math.max(0,Math.min(wide,area) - 2 * Equipment.WINDOW_PAD) * Equipment.FIXED_FIT);
+      size = room;
+      reach = Math.max(0,(wide - room) / 2 - Equipment.WINDOW_PAD);
+      across = Math.max(- reach,Math.min(reach,across));
+      reach = Math.max(0,(area - room) / 2 - Equipment.WINDOW_PAD);
+      upward = Math.max(- reach,Math.min(reach,upward));
+   }
+   middle = Equipment.share(window._x + wide / 2 + across,window._y + area / 2 - upward);
+   size /= Stage.visibleRect.height;
+   room /= Stage.visibleRect.height;
    if(Equipment.plugin() != undefined && !Equipment.inspecting)
    {
-      Equipment.plugin().PlacePreview(middle.x,middle.y,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height);
+      Equipment.plugin().PlacePreview(middle.x,middle.y,size);
+      if(fixed)
+      {
+         skse.Log("PANELTEST fixed preview: window " + Math.round(wide) + " x " + Math.round(area) + " (model area) at " + Math.round(window._x) + "," + Math.round(window._y) + ", size " + Math.round(size * Stage.visibleRect.height) + ", room " + Math.round(room * Stage.visibleRect.height) + " stage units, offset " + Math.round(across) + "," + Math.round(upward));
+      }
    }
 };
-Equipment.FIXED_PREVIEW = 260;
 Equipment.FIXED_BASE = 0.8;
 Equipment.FIXED_STEP = 0.002;
 Equipment.LOOK_STEPS.fixX = {id:"fTurnSpeed:Doll",step:10,least:0,most:100};
@@ -139,10 +164,9 @@ Equipment.fixedSync = function()
    }
    Equipment.fixedRead();
 };
-Equipment.FIXED_HEAD = 20;
+Equipment.FIXED_HEAD = 24;
 Equipment.FIXED_NAME_ABOVE = 26;
 Equipment.FIXED_CARD_GAP = 24;
-Equipment.FIXED_SLACK = 24;
 Equipment.placeFixed = function()
 {
    var window = Equipment.window;
@@ -158,7 +182,6 @@ Equipment.placeFixed = function()
    var bottom;
    var nameTop;
    var room;
-   var most;
    lists.panelContainer.localToGlobal(corner);
    Equipment.toPanel(corner);
    lists.itemList.localToGlobal(rows);
@@ -181,16 +204,15 @@ Equipment.placeFixed = function()
       skse.Log("PANELTEST fixed: frame not measured, left " + Math.round(left) + " right " + Math.round(right) + " top " + Math.round(top) + " bottom " + Math.round(bottom) + " - window left as it was");
       return undefined;
    }
-   most = Math.max(Equipment.PREVIEW_LEAST + under,room - Equipment.FIXED_SLACK);
-   window.preview = Math.max(30,Math.min(Equipment.FIXED_PREVIEW,most - under));
-   Equipment.drawWindow(window.preview + under);
+   window.preview = Math.max(30,room - under);
+   Equipment.drawWindow(Math.min(room,window.preview + under));
    window.above = false;
-   window.clamped = window.high > room || wideP > right - left;
-   window._x = Math.max(left,Math.min(right - wideP,left + (right - left - wideP) * Equipment.settings.fixX / 100));
-   window._y = Math.max(top,Math.min(bottom - window.high,top + (room - window.high) * Equipment.settings.fixY / 100));
+   window.clamped = false;
+   window._x = Math.max(left,right - wideP);
+   window._y = top;
    window.rowEdge = window._y;
    window.rowMiddle = window._y + window.high / 2;
-   skse.Log("PANELTEST fixed: frame x " + Math.round(left) + ".." + Math.round(right) + " y " + Math.round(top) + ".." + Math.round(bottom) + " (list origin y " + Math.round(rows.y) + ", name text top " + (nameTop != undefined ? Math.round(nameTop) : "none") + "), room " + Math.round(room) + ", stats " + Math.round(under) + ", window " + Math.round(wideP) + " x " + Math.round(window.high) + " at " + Math.round(window._x) + "," + Math.round(window._y) + " (sideways " + Equipment.settings.fixX + ", up and down " + Equipment.settings.fixY + ")");
+   skse.Log("PANELTEST fixed: frame x " + Math.round(left) + ".." + Math.round(right) + " y " + Math.round(top) + ".." + Math.round(bottom) + " (list origin y " + Math.round(rows.y) + ", name text top " + (nameTop != undefined ? Math.round(nameTop) : "none") + "), room " + Math.round(room) + ", stats " + Math.round(under) + ", window " + Math.round(wideP) + " x " + Math.round(window.high) + " at " + Math.round(window._x) + "," + Math.round(window._y) + " (locked over the list's right side, full list height)");
 };
 '''
 
@@ -248,11 +270,6 @@ EDITS_22 += [
    if(Equipment.settings.doll != true)
    {
       y += Equipment.lookCheck(sheet,"fixed",Equipment.say("Fixed place"),undefined,pad,y,inner,Equipment.LOOK_LINE);
-      if(Equipment.settings.fixOn)
-      {
-         y += Equipment.lookStepper(sheet,"fixX",Equipment.say("Sideways"),"across",pad,y,inner);
-         y += Equipment.lookStepper(sheet,"fixY",Equipment.say("Up and down"),"upward",pad,y,inner);
-      }
    }
 """),
     ("""      case "listWidth":
@@ -325,8 +342,7 @@ CARD_ROOM = "150"
 # 1.4.0 lets the item window wear the card's own frame (the card's background art stretched to the window) and grows the
 # card's frame for chests; with Norden's card left alone the window keeps its own plain sheet and adds no frame edge
 FRAME_FUNCTIONS = "Equipment.frameWindow = function()\n{\n   return false;\n};\nEquipment.frameEdge = function()\n{\n   return 0;\n};\n"
-AIM_FOUR = ("PlacePreview(middle.x,middle.y,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height);",
-            "PlacePreview(middle.x,middle.y,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height,Math.min(area,wide) * fit * tune.size / Stage.visibleRect.height);")
+AIM_FOUR = ("PlacePreview(middle.x,middle.y,size);", "PlacePreview(middle.x,middle.y,size,room);")
 CARD_FUNCTIONS = [
     ("sizeWindow", [("   card._yscale = window.wide / Equipment.cardWidth() * 100;\n", "")]),
     ("windowUnits", [("   card._xscale = card._yscale * across / Equipment.squash;\n", "")]),

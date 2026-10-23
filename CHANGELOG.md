@@ -3,6 +3,30 @@
 
 ## 1.1.0 - 2026-10-22 - untested
 
+### Changed (Inventory Reforged Fixed place, 2026-10-22, later)
+- **Fixed place is now a locked window over the list, with the 3D item held inside it** (the owner: "the item is inside the
+  preview window and cannot exceed the bounds of the preview window and I want the preview window to be locked in place and
+  fit over the list rows so that it covers up the filtering options that are to the right of the item ... only in the fixed
+  mode ticked"). Only with Fixed place ticked; unticked is unchanged (same arithmetic, and screenshots of five items match
+  the earlier build pixel for pixel in a fresh session).
+  - The window no longer has Sideways and Up and down positions: it is locked at the right side of the item list (the same
+    width as before, its right edge at the rows' edge), over the Type, Weight and Value columns and their headers, from the
+    top of the list's frame (24 units above the first row, was 20 plus a chosen place) to its bottom, at the frame's full
+    height (309 units, 464 px at 1920x1080; was cut to the room minus 24 units of slack and capped at 260 units of model
+    area). The popup's Item window section shows only the Fixed place switch. Stored the same way (fTurnSpeed while the
+    character is hidden), so a saved Fixed place stays on.
+  - The 3D item is fitted by its bounding sphere: PlacePreview's fourth number (Inventory Reforged 1.4.0's "room", which
+    makes any model whose bound is wider than it smaller) is the smaller of the window's width and its model area, less the
+    window padding, times 0.94, and the size asked is never more than that room, so no turn of the model can reach past the
+    window. The ITEM PREVIEW Sideways and Up and down offsets still work but are held to what the room leaves, so the item
+    moves as far as the window allows instead of leaving it. Every placement logs a `PANELTEST fixed preview:` line.
+  - Tested in game (Njordlinger Test, 1920x1080): armour, sword, greatsword, mace, bow, arrows, shield, three staves and
+    Volendrung at sizes 60, 80, 140 percent and with the item offsets at 40 percent right/up and left/down - the window stayed
+    at 540,176 (303 x 464 px) for every item and every scroll position, and every model stayed inside it (smallest margin to
+    the window edge 13 px). Mouse drag does not turn the model in the window (Inventory Reforged turns it off there).
+    Right after a Size change in the popup, Inventory Reforged keeps the models it already has and rescales them about their
+    own origin, so a sword can sit low against the stats line until the menu is reopened (still inside the window).
+
 ### Changed (Inventory Reforged 1.4.0, 2026-10-22)
 - **Inventory Reforged 1.4.0** (released after 1.3.0; the owner: "install the new update and add our list of changes to it"). The panel option is
   rebuilt for 1.4.0's panel.swf (SHA-256 c84efeca...) and is now the only one shipped: 1.2.4 and 1.3.0 are two releases behind (the
