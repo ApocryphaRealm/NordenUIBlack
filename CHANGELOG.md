@@ -1,7 +1,7 @@
 # Changelog - Norden UI - Black
 
 
-## 1.1.0 - 2026-10-22 - untested
+## 1.1.0 - 2026-10-22 - working
 
 ### Added (World Map Selector for Controller, 2026-10-23)
 - **A "World Map Selector for Controller - Norden Black map panel" option**, Recommended when
