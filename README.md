@@ -67,3 +67,15 @@ set that position for Norden's own item card. Norden UI - Black must have a high
 A third choice, **Inventory Reforged - panel fixes** (Inventory Reforged 1.4.0) (optional), replaces that
 mod's `panel.swf` with a copy in which two scripts (DoAction_21, 22) changed (made by `tools/ir-preview-patch.py`; the file is
 not in the repository): the 3D item is aimed at the middle of the part of the item window above its stats and sized to fit it, and the settings popup gets an Item preview section (Size, Sideways, Up and down, Reset) when the character is off; the Character button stays at the bottom; Norden's own item card stays untouched in the skin's place instead of being restyled and moved by Inventory Reforged; the item window can be locked in a fixed place over the right side of the item list, at the list's full height, with the 3D item always held inside it (Fixed place in the cog popup).
+
+## The World Map Selector for Controller option (1.1.0+)
+
+For players of World Map Selector for Controller: **World Map Selector for Controller - Norden Black map panel**
+(Recommended when its DLL is installed, otherwise unticked) installs `SKSE\Plugins\WorldMapSelectorForController_PanelStyle.ini`
+(source `extras/world-map-selector/`), a style file that mod reads; it ships none itself, so nothing of it is replaced.
+The map list panel then wears Norden UI - Black's look, every value read from Norden UI - Black's own movies: black,
+opaque (the item card body; the Inventory Reforged panel option's fills), white row text (the item list's entries),
+`#999999` hint text (the item card's labels), `#5B676D` edge lines and separators (the item card's edge line) and the
+item list's selection indicator (a slate band with light lines fading to the right and a thin left mark) instead of the
+menu framework's theme frame. The text face stays the menu framework's (Norden's own face, Jost, is a game font
+library, and the framework owns the ImGui font atlas).

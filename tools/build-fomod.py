@@ -277,6 +277,29 @@ _irpat = ET.SubElement(ET.SubElement(_irt, "patterns"), "pattern")
 ET.SubElement(ET.SubElement(_irpat, "dependencies", {"operator": "And"}), "fileDependency",
               {"file": r"SKSE\Plugins\InventoryReforged.dll", "state": "Active"})
 ET.SubElement(_irpat, "type", {"name": "Recommended"})
+# World Map Selector for Controller (ours; 1.1.0, the owner 2026-10-23: its map panel "should match Norden UI - Black's
+# look ... the same way Norden's IR patch matches the inventory"). The same shape as the Inventory Reforged option: no
+# art and no code of that mod, only a style file it reads (SKSE\Plugins\WorldMapSelectorForController_PanelStyle.ini,
+# a file World Map Selector for Controller does not ship itself, so nothing of it is overwritten). Its colours are read
+# from Norden UI - Black's own movies (see the file's comments). Recommended when its DLL is installed.
+WMS_STYLE = os.path.join(REPO, "extras", "world-map-selector", "WorldMapSelectorForController_PanelStyle.ini")
+if not os.path.isfile(WMS_STYLE):
+    fail(f"World Map Selector for Controller option input missing: {WMS_STYLE}")
+_wmp = ET.SubElement(plugins, "plugin", {"name": "World Map Selector for Controller - Norden Black map panel"})
+ET.SubElement(_wmp, "description").text = (
+    "Only if you use World Map Selector for Controller. Its list of world maps beside the world map takes Norden UI - "
+    "Black's look: a black, opaque panel, white text, the item list's selection (a faint slate band with light lines that "
+    "fade to the right) and the item card's slate edge lines instead of the menu framework's frame. Installs "
+    "SKSE\\Plugins\\WorldMapSelectorForController_PanelStyle.ini, a style file the mod reads - no file of the mod is "
+    "replaced. Its Side, Width and Text size settings work as before; untick the option (or delete the file) for the "
+    "menu framework's theme.")
+ET.SubElement(ET.SubElement(_wmp, "files"), "folder", {"source": "World Map Selector for Controller", "destination": "", "priority": "0"})
+_wmt = ET.SubElement(ET.SubElement(_wmp, "typeDescriptor"), "dependencyType")
+ET.SubElement(_wmt, "defaultType", {"name": "Optional"})
+_wmpat = ET.SubElement(ET.SubElement(_wmt, "patterns"), "pattern")
+ET.SubElement(ET.SubElement(_wmpat, "dependencies", {"operator": "And"}), "fileDependency",
+              {"file": r"SKSE\Plugins\WorldMapSelectorForController.dll", "state": "Active"})
+ET.SubElement(_wmpat, "type", {"name": "Recommended"})
 _irq = ET.SubElement(plugins, "plugin", {"name": "Inventory Reforged - item preview size (SkyUI default 3D item position)"})
 ET.SubElement(_irq, "description").text = (
     "Only if the 3D item in Inventory Reforged's item window is small or off its place. Inventory Reforged sizes and "
@@ -503,6 +526,9 @@ os.makedirs(os.path.join(_iro, "SKSE", "Plugins"))
 os.makedirs(os.path.join(_iro, "docs"))
 shutil.copy2(IR_INI, os.path.join(_iro, "SKSE", "Plugins", "InventoryReforged.ini"))
 open(os.path.join(_iro, "docs", "Inventory Reforged - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(IR_NOTE)
+_wmo = os.path.join(OUT, "World Map Selector for Controller", "SKSE", "Plugins")
+os.makedirs(_wmo)
+shutil.copy2(WMS_STYLE, os.path.join(_wmo, "WorldMapSelectorForController_PanelStyle.ini"))
 _irv = os.path.join(OUT, "Inventory Reforged preview", "MCM", "Settings")
 os.makedirs(_irv)
 shutil.copy2(IR_3D_SRC, os.path.join(_irv, "SkyUI_SE.ini"))
@@ -584,7 +610,12 @@ unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D it
 Inventory Reforged's item window is small. A third, unticked choice (Inventory Reforged 1.4.0), "panel fixes", replaces its panel.swf with a copy where three scripts changed: the item preview, the Character button staying at the bottom, Norden's own item card left alone, and the panel's sheets, slot frames, buttons and tabs filled black (allowed by that mod's page).
 Give Norden UI - Black a higher priority than Inventory Reforged.
 
-Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.
+World Map Selector for Controller (optional, 1.1.0, recommended when its DLL is installed): its list of world maps beside
+the world map takes Norden UI - Black's look - black panel, white text, the item list's selection and the item card's
+slate edge lines. The option is a style file the mod reads (SKSE\\Plugins\\WorldMapSelectorForController_PanelStyle.ini);
+no file of the mod is replaced. Delete it, or untick the option, for the menu framework's theme.
+
+Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI. For the World Map Selector for Controller option: World Map Selector for Controller 1.0.0 or later.
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.
 RaceMenu Atelier is emberchain's (GPL-3.0), modified and shipped with emberchain's permission.
 Inventory Reforged for SkyUI is its author's work (Nexus 195826); its settings file is reused with the permission its page gives.

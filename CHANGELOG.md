@@ -3,6 +3,17 @@
 
 ## 1.1.0 - 2026-10-22 - untested
 
+### Added (World Map Selector for Controller, 2026-10-23)
+- **A "World Map Selector for Controller - Norden Black map panel" option**, Recommended when
+  `SKSE\Plugins\WorldMapSelectorForController.dll` is installed, otherwise optional and unticked (the same shape as the
+  Inventory Reforged colours option). It installs `SKSE\Plugins\WorldMapSelectorForController_PanelStyle.ini`, a style
+  file that mod reads (it ships none itself, so nothing of it is replaced): black opaque panel (the item card body and
+  the Inventory Reforged panel option's fills, 0,0,0 at 100%), white row text (skyui/inventorylists.swf entry text),
+  #999999 hint text (skyui/itemcard.swf labels), #5B676D edge lines and separators (the item card's edge line), and the
+  item list's selection indicator (ItemsListEntry selectIndicator: slate 43,52,57 band at 35%, 248,248,248 lines at 45%
+  fading to the right, 252,252,252 left mark at 31%); the menu framework's theme frame is not drawn. No movie changed.
+  Source: `extras/world-map-selector/`; README section added.
+
 ### Changed (Dragon's Eye Minimap movie, 2026-10-23)
 - **The Norden Dragon Eye Minimap patch's Minimap.swf carries Dragon's Eye Minimap 1.7.5's own frame-1 script.** Read
   tag by tag against Dragon's Eye Minimap 1.7.5's movie, Norden's differs in its art and layout (kept) and in that one
