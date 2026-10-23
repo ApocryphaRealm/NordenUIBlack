@@ -324,6 +324,9 @@ for _v, (_f, _folder) in IR_PANELS.items():
         "edges. It is off by default - nothing changes until you "
         "tick it - and it is kept (it rides in the saved Doll turn speed, which does nothing while the character is hidden; "
         "switching the character on puts the turn speed back to 0.5 and ends Fixed). "
+        "(5) Norden Black colours: the panel's sheets (the cog popup, the Character drawer, the right-click menu, tooltips), its "
+        "slot frames, buttons and tabs are black and opaque, like Norden UI - Black's item list, instead of Inventory Reforged's "
+        "dark greys and see-through blacks. "
         "The kind line (\"ONE-HANDED, SWORD\") that Inventory Reforged added to the card is not shown. Inventory Reforged's "
         "page allows changing any part of the mod; credit: Inventory Reforged for SkyUI. The file belongs to version "
         f"{_v}: untick this option (or delete the file) after updating Inventory Reforged. Works best with SkyUI's 3D item scale "
@@ -484,15 +487,20 @@ for _v, (_f, _folder) in IR_PANELS.items():
     os.makedirs(os.path.join(OUT, _folder, "docs"))
     open(os.path.join(OUT, _folder, "docs", f"Inventory Reforged {_v} panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(
         f"Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"panel fixes\" option is\n"
-        f"panel.swf of Inventory Reforged for SkyUI {_v} (Nexus 195826) with TWO scripts changed (DoAction_21, 22):\n"
-        "DoAction_22: Equipment.aimPreview is replaced - the 3D item is aimed at the middle of the whole part of the item window\n"
+        f"panel.swf of Inventory Reforged for SkyUI {_v} (Nexus 195826) with THREE scripts changed (DoAction_22, 23, 28):\n"
+        "DoAction_23 (settings popup): Equipment.aimPreview is replaced - the 3D item is aimed at the middle of the whole part of the item window\n"
         "above its stats and sized to min(area, window width) x fit (0.95 weapons and ammo, 1.1 the rest) x the player's size - and\n"
         "the settings popup gets an ITEM PREVIEW section (Size, Sideways, Up and down, Reset) when the character is switched off,\n"
-        "using the saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]). DoAction_22 also redefines\n"
+        "using the saved numbers of the character controls (iScale, iShiftRight, iShiftUp of [Doll]). DoAction_23 also redefines\n"
         "sizeWindow, windowUnits, placeWindow, cardSpan, showWindow, keepFrameHidden and effectLines without the lines that moved,\n"
         "rescaled, hid, restyled and re-worded the menu's item card (Norden's), so it shows as Norden made it, in Norden's place.\n"
-        "DoAction_22 also adds a Fixed place mode for the item window (Item window section of the popup: Fixed place), locked over the right side of the item list at the list frame's full height, the 3D item held inside it by its bounding sphere (PlacePreview's room), kept in the saved Doll turn speed (fTurnSpeed) while the character is hidden.\n"
-        "DoAction_21 (Character drawer): the CHARACTER tab stays at the bottom, the drawer opens above it.\n"
+        "DoAction_23 also adds a Fixed place mode for the item window (Item window section of the popup: Fixed place), locked over the right side of the item list at the list frame's full height, the 3D item held inside it by its bounding sphere (PlacePreview's room), kept in the saved Doll turn speed (fTurnSpeed) while the character is hidden.\n"
+        "DoAction_22 (Character drawer): the CHARACTER tab stays at the bottom, the drawer opens above it.\n"
+        "Norden Black colours: the panel sheets (settings popup, Character drawer, context menu, tooltip, junk question), the slot\n"
+        "frames, the buttons and the tabs and strips are filled black, opaque (were #1A1A1A / #2C2C2C gradients and black at 40-96\n"
+        "percent): panelBox, drawFrame, drawSheet, drawTab, placePieces, drawPiecesControl, drawJunkAskButton and drawAction are\n"
+        "redefined in DoAction_23 with the new fill; drawLookButton, drawLookArrow and drawLookReset are changed in DoAction_23,\n"
+        "drawHeroTab in DoAction_22 and drawCompanionTab (the follower tabs) in DoAction_28. Lines, accents and text are unchanged.\n"
         "Inventory Reforged's page allows changing and including any part of the mod without asking; credit: Inventory Reforged\n"
         "for SkyUI. Tool: tools/ir-preview-patch.py in the Norden UI - Black repository. Delete this file (or untick the option)\n"
         "after updating Inventory Reforged.\n")
@@ -547,7 +555,7 @@ parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the re
 so it is black under Norden UI - Black. The option is a settings file holding only those two colours
 (SKSE\\Plugins\\InventoryReforged.ini; every other setting keeps the mod's own default) - no art or code of Inventory Reforged. Its menu settings still win. A second,
 unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
-Inventory Reforged's item window is small. A third, unticked choice (Inventory Reforged 1.4.0), "panel fixes", replaces its panel.swf with a copy where two scripts changed: the item preview, the Character button staying at the bottom, and Norden's own item card left alone (allowed by that mod's page).
+Inventory Reforged's item window is small. A third, unticked choice (Inventory Reforged 1.4.0), "panel fixes", replaces its panel.swf with a copy where three scripts changed: the item preview, the Character button staying at the bottom, Norden's own item card left alone, and the panel's sheets, slot frames, buttons and tabs filled black (allowed by that mod's page).
 Give Norden UI - Black a higher priority than Inventory Reforged.
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI.

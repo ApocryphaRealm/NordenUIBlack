@@ -3,6 +3,17 @@
 
 ## 1.1.0 - 2026-10-22 - untested
 
+### Changed (Inventory Reforged panel colours, 2026-10-23)
+- **The Inventory Reforged panel is black now** (the owner: the panel "is not black enough"). Inventory Reforged draws its
+  panels itself and drew them in dark greys and see-through blacks: the sheets of the settings popup, the Character drawer,
+  the right-click menu, tooltips and the junk question were a #1A1A1A-to-black gradient at 84-96 percent, the slot frames a
+  #2C2C2C-to-black gradient at 45-72 percent, its buttons #1A1A1A at 80 percent, the slot tabs, piece strip, CHARACTER tab,
+  follower tabs, cog button and arrow buttons black at 40-82 percent and the item window's popup sheet black at 96 percent.
+  All of them are now black, opaque (Norden UI - Black's item list is black at 90 percent with solid black parts; Inventory
+  Reforged's own item window sheet was already black at 100). Lines, the accent colour, the lit tints, text and icons are
+  unchanged. Panel fixes option only (Inventory Reforged 1.4.0; tools/ir-preview-patch.py COLOUR_EDITS, which now lets
+  DoAction_28 differ as well, for the follower tabs).
+
 ### Changed (Inventory Reforged Fixed place, 2026-10-22, later)
 - **Fixed place is now a locked window over the list, with the 3D item held inside it** (the owner: "the item is inside the
   preview window and cannot exceed the bounds of the preview window and I want the preview window to be locked in place and
