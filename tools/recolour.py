@@ -4,7 +4,9 @@
 # and hover states stay distinguishable. Alpha is never touched, so opacity / fade levels are unchanged.
 import os, re, subprocess, sys, time, collections
 from concurrent.futures import ThreadPoolExecutor
-FF = r"C:\Program Files (x86)\FFDec\ffdec-cli.exe"
+# FFDec through its jar with a capped heap: ffdec-cli.exe gives Java a heap the size of the machine's RAM and one
+# -swf2xml pass reached 11.7 GB beside a running game (2026-10-23). FFDEC_HEAP overrides the 4g cap.
+FF = ["java", "-Xmx" + os.environ.get("FFDEC_HEAP", "4g"), "-jar", r"C:\Program Files (x86)\FFDec\ffdec-cli.jar"]
 HERE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build")
 SRC_XML = os.environ.get("NORDEN_XML", os.path.join(HERE, "xml")); DST_XML = os.environ.get("NORDEN_XML_BLACK", os.path.join(HERE, "xml-black"))   # full-archive build: its own XML dirs (2026-09-24)
 MOD = os.environ.get("NORDEN_BLACK", r"D:\modlists\Njordlinger\mods\unpublished Norden UI - Black")
@@ -34,7 +36,7 @@ print("mapping used:", sorted(stats.items()))
 def build(j):
     dst, out, _ = j
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    r = subprocess.run([FF, "-xml2swf", dst, out], capture_output=True, text=True)
+    r = subprocess.run([*FF, "-xml2swf", dst, out], capture_output=True, text=True)
     return out if (os.path.exists(out) and os.path.getsize(out) > 0) else "FAIL " + dst + (r.stderr or r.stdout)[-200:]
 if "--build" in sys.argv:
     t = time.time()

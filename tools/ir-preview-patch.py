@@ -34,7 +34,9 @@ Reforged for SkyUI, Nexus 195826), see extras/inventory-reforged/PERMISSIONS.txt
 """
 import argparse, hashlib, os, shutil, subprocess, sys, tempfile
 
-FF = r"C:\Program Files (x86)\FFDec\ffdec-cli.exe"
+# FFDec through its jar with a capped heap: ffdec-cli.exe gives Java a heap the size of the machine's RAM and one
+# -swf2xml pass reached 11.7 GB beside a running game (2026-10-23). FFDEC_HEAP overrides the 4g cap.
+FF = ["java", "-Xmx" + os.environ.get("FFDEC_HEAP", "4g"), "-jar", r"C:\Program Files (x86)\FFDec\ffdec-cli.jar"]
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # The scripts of panel.swf are numbered in the order of the source's parts; 1.4.0 added parts, so the numbers moved.
 # window = the item window (36-window.as), hero = the Character drawer (38-hero.as), look = the settings popup (38-look.as)
@@ -449,7 +451,7 @@ def sha(p):
 
 
 def ff(*a):
-    return subprocess.run([FF, *a], capture_output=True, text=True)
+    return subprocess.run([*FF, *a], capture_output=True, text=True)
 
 
 def main():

@@ -12,7 +12,9 @@
 # Env (same names as recolour.py): NORDEN_XML_BLACK (default build\xml-black), NORDEN_BLACK (the recoloured tree the
 # package is assembled from; default build\full-black here, because the full archive is what ships).
 import os, re, sys, subprocess, collections
-FF = r"C:\Program Files (x86)\FFDec\ffdec-cli.exe"
+# FFDec through its jar with a capped heap: ffdec-cli.exe gives Java a heap the size of the machine's RAM and one
+# -swf2xml pass reached 11.7 GB beside a running game (2026-10-23). FFDEC_HEAP overrides the 4g cap.
+FF = ["java", "-Xmx" + os.environ.get("FFDEC_HEAP", "4g"), "-jar", r"C:\Program Files (x86)\FFDec\ffdec-cli.jar"]
 HERE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build")
 XML_BLACK = os.environ.get("NORDEN_XML_BLACK", os.path.join(HERE, "full-xml-black"))
 OUT = os.environ.get("NORDEN_BLACK", os.path.join(HERE, "full-black"))
@@ -61,7 +63,7 @@ if "--build" in sys.argv:
     bad = 0
     for xml, out in jobs:
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        r = subprocess.run([FF, "-xml2swf", xml, out], capture_output=True, text=True)
+        r = subprocess.run([*FF, "-xml2swf", xml, out], capture_output=True, text=True)
         ok = os.path.exists(out) and os.path.getsize(out) > 0
         print(("built " if ok else "FAIL  ") + out)
         bad += 0 if ok else 1
