@@ -111,6 +111,28 @@ print(f"moreHUD presets with the current layout: {morehud}")
 if morehud != 4:
     fail("expected four moreHUD presets (two per resolution)")
 
+# ---- 1b. Norden's SkyUI item card / 3D item settings beside the layout movies (1.1.1) -------------------------------
+# Every Norden inventory layout (Main bulk, Vertical Itemcard, Vertical Tabs, Slimventory, 3D Item Location > SkyUI
+# Default) installs MCM/Settings/SkyUI_SE.ini: SkyUI's item card offsets and the 3D item's offsets and scale (0.7, or 0.6
+# for the vertical card and Slimventory layouts) that fit that layout's movies. Step 2 keeps only entries holding
+# recoloured art, so up to 1.1.0 the package installed the movies without that file, and the item was drawn at SkyUI's
+# default scale 1.5 (2.1 to 2.5 times Norden's) whenever Norden's own copy was not underneath or another file won
+# (a player report, 2026-10-23). The file is copied unchanged next to the recoloured movies, so each option's MCM folder
+# entry installs it again, exactly as Norden's installer does.
+_skyui_ini = 0
+for dp, _, fs in os.walk(os.path.join(SRC, "Patches")):
+    for f in fs:
+        if f.lower() == "skyui_se.ini" and os.path.basename(dp).lower() == "settings" \
+                and os.path.basename(os.path.dirname(dp)).lower() == "mcm":
+            rel = os.path.relpath(os.path.join(dp, f), SRC)
+            out = os.path.join(BLACK, rel)
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            shutil.copy2(os.path.join(dp, f), out)
+            _skyui_ini += 1
+print(f"Norden SkyUI item card / 3D item settings carried: {_skyui_ini}")
+if _skyui_ini != 8:
+    fail(f"expected eight Norden MCM/Settings/SkyUI_SE.ini files (one per inventory layout folder), found {_skyui_ini}")
+
 # ---- 2. Norden's installer, rewritten against the recoloured tree --------------------------------------------------
 raw = open(os.path.join(SRC, "fomod", "ModuleConfig.xml"), "rb").read().decode("utf-16")
 raw = re.sub(r"^\s*<!--.*?-->\s*", "", raw, flags=re.S)
@@ -310,8 +332,11 @@ ET.SubElement(_irq, "description").text = (
     "It also carries that file's other Norden settings (item card and effect widget), so if you use a vertical or "
     "other layout, leave this unticked and set the 3D item scale to 1.5 and the offsets to 0 in SkyUI's MCM "
     "(Advanced > 3D item) instead. Restart the game after changing it. Give Norden UI - Black a higher priority than "
-    "Norden UI so this file wins. Norden UI is Nithog's work; this is Nithog's file, unchanged.")
-ET.SubElement(ET.SubElement(_irq, "files"), "folder", {"source": "Inventory Reforged preview", "destination": "", "priority": "0"})
+    "Norden UI so this file wins. It replaces your layout's own 3D item settings, so the 3D item is also about twice "
+    "as large in the normal item view - tick it only if you use Inventory Reforged's item window. "
+    "Norden UI is Nithog's work; this is Nithog's file, unchanged.")
+# priority 1 (1.1.1): wins over the layout's own SkyUI_SE.ini, now installed too, whatever order the manager uses
+ET.SubElement(ET.SubElement(_irq, "files"), "folder", {"source": "Inventory Reforged preview", "destination": "", "priority": "1"})
 ET.SubElement(ET.SubElement(_irq, "typeDescriptor"), "type", {"name": "Optional"})
 IR_PANELS = {}   # version -> (patched panel.swf from tools/ir-preview-patch.py, folder in the package)
 # Inventory Reforged 1.4.0 is the one shipped: the owner moved to it and 1.2.4 / 1.3.0 are two releases behind. The patch tool still

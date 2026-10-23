@@ -1,5 +1,19 @@
 # Changelog - Norden UI - Black
 
+## 1.1.1 - 2026-10-23 - untested
+
+### Fixed (3D item too large, a player report, 2026-10-23)
+- **Each inventory layout option now installs Norden UI's own SkyUI item card and 3D item settings with its movies**
+  (`MCM\Settings\SkyUI_SE.ini`, Norden's file unchanged: 3D item scale 0.7, or 0.6 for the vertical item card and
+  Slimventory layouts, and Norden's offsets). The installer kept only entries holding recoloured art, so up to 1.1.0
+  every layout installed its movies without that file. Where Norden UI's own copy was not underneath, or another file
+  won, SkyUI drew the 3D item at its default scale 1.5: 2.1 times Norden's size (2.5 times with the vertical card and
+  Slimventory layouts). Installed for the same options as in Norden UI's installer: Main bulk (16x9, 21x9), Vertical
+  Itemcard, Vertical Tabs, Slimventory and 3D Item Location > SkyUI Default. No movie changed (every SWF is
+  byte-identical to 1.1.0).
+- **Inventory Reforged - item preview size** now says it makes the 3D item about twice as large in the normal item view
+  too, and installs at priority 1, so it still wins over the layout's file when ticked.
+
 
 ## 1.1.0 - 2026-10-22 - working
 
