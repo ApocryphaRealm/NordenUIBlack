@@ -452,6 +452,32 @@ if untuned_variants:
     for r in sorted(set(untuned_variants)):
         print("   ", r)
 
+# ---- 4c. Dragon's Eye Minimap's frame-1 script in Norden's minimap movie (1.1.0, 2026-10-23) ------------------------
+# After the hand-tuned carry-over, which would otherwise put the installed copy back over it. tools/minimap-dem-patch.py
+# replaces only the root frame-1 DoAction of Norden's Minimap.swf with Dragon's Eye Minimap 1.7.5's (HUD mode flags
+# with Favor, SyncVisibilityToHudMode) and checks every other tag is unchanged; Norden's art and layout stay as they are.
+import importlib.util as _ilu
+_mdp_spec = _ilu.spec_from_file_location("minimap_dem_patch", os.path.join(REPO, "tools", "minimap-dem-patch.py"))
+_mdp = _ilu.module_from_spec(_mdp_spec)
+_mdp_spec.loader.exec_module(_mdp)
+_dem_movies = []
+for dp, _, fs in os.walk(OUT):
+    for f in fs:
+        if f.lower() == "minimap.swf" and "infinityui" in dp.lower():
+            _dem_movies.append(os.path.join(dp, f))
+if not _dem_movies:
+    fail("no Dragon's Eye Minimap movie (InfinityUI ... Minimap.swf) in the package to patch")
+for _p in _dem_movies:
+    try:
+        _new, _msg = _mdp.patch(open(_p, "rb").read(), _mdp.DEM_FRAME1)
+    except ValueError as _e:
+        fail(f"minimap-dem-patch: {os.path.relpath(_p, OUT)}: {_e}")
+    if _new is not None:
+        open(_p, "wb").write(_new)
+    if not _mdp.carries(open(_p, "rb").read()):
+        fail(f"minimap-dem-patch: {os.path.relpath(_p, OUT)} does not carry the script after patching")
+    print(f"  Dragon's Eye Minimap script: {os.path.relpath(_p, OUT)} - {_msg}")
+
 shutil.copytree(dip_dir, os.path.join(OUT, "Extras", "RaceMenu DIP", "Norden Black RaceMenu DIP"))
 shutil.copy2(dip_json, os.path.join(OUT, "Extras", "RaceMenu DIP", "Norden-Black-RaceMenu.json"))
 shutil.copy2(buttonart, os.path.join(OUT, "Extras", "RaceMenu DIP", "buttonart.swf"))

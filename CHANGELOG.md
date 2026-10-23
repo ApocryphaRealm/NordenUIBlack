@@ -3,6 +3,17 @@
 
 ## 1.1.0 - 2026-10-22 - untested
 
+### Changed (Dragon's Eye Minimap movie, 2026-10-23)
+- **The Norden Dragon Eye Minimap patch's Minimap.swf carries Dragon's Eye Minimap 1.7.5's own frame-1 script.** Read
+  tag by tag against Dragon's Eye Minimap 1.7.5's movie, Norden's differs in its art and layout (kept) and in that one
+  script, which is the older one: no Favor among the clip's HUD mode flags and no SyncVisibilityToHudMode, the call that
+  makes the minimap visible when it joins the HUD's element list while the HUD mode allows it. That DoAction tag is now
+  Dragon's Eye Minimap 1.7.5's, byte for byte; every other tag is unchanged and checked (tools/minimap-dem-patch.py,
+  run by build-fomod.py after the hand-tuned carry-over). The names the plugin reaches were already there and are
+  unchanged: MapClip, IconDisplay (and its YouAreHereMarker, set when the markers are made; Norden's YouAreHereMarker
+  art has its Icon on frame 1), Controls, LocationName, ClearedHint, LocalMapHolder, VisionCone, AddToHudElements,
+  updateScaleform. The "All" flag is declared the same way in both movies and assigned by the plugin.
+
 ### Changed (Inventory Reforged panel colours, 2026-10-23)
 - **The Inventory Reforged panel is black now** (the owner: the panel "is not black enough"). Inventory Reforged draws its
   panels itself and drew them in dark greys and see-through blacks: the sheets of the settings popup, the Character drawer,
