@@ -33,6 +33,33 @@ Build switches:
 """
 import os, re, sys, json, shutil, hashlib, xml.etree.ElementTree as ET
 
+
+def supersede(folder):
+    """NEVER DELETE A PACKAGE (2026-10-25): the package folder this build replaces is MOVED to
+    <project>/_work/superseded-packages/<date>/ - <project> being the nearest folder above it that has a _work folder
+    (SUPERSEDED_PACKAGES_DIR overrides; with neither, a _superseded folder beside it) - and stays there until someone
+    clears it by hand. This script used to shutil.rmtree it."""
+    import time
+    root = os.environ.get("SUPERSEDED_PACKAGES_DIR")
+    here = os.path.dirname(os.path.abspath(folder))
+    p = here
+    while not root:
+        if os.path.isdir(os.path.join(p, "_work")):
+            root = os.path.join(p, "_work", "superseded-packages")
+        elif os.path.dirname(p) == p:
+            root = os.path.join(here, "_superseded")
+        else:
+            p = os.path.dirname(p)
+    day = os.path.join(root, time.strftime("%Y-%m-%d"))
+    os.makedirs(day, exist_ok=True)
+    to = base = os.path.join(day, "%s (replaced %s)" % (os.path.basename(os.path.normpath(folder)), time.strftime("%H%M%S")))
+    i = 2
+    while os.path.exists(to):
+        to, i = "%s %d" % (base, i), i + 1
+    shutil.move(folder, to)
+    print("the package this build replaces was moved to %s (never deleted)" % to)
+    return to
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(REPO, "build")
 SRC = os.environ.get("NORDEN_SRC", os.path.join(BUILD, "source", "main"))
@@ -427,7 +454,7 @@ else:
 
 # ---- 4. the package ------------------------------------------------------------------------------------------------
 if os.path.exists(OUT):
-    shutil.rmtree(OUT)
+    supersede(OUT)
 os.makedirs(os.path.join(OUT, "fomod"))
 n = 0
 for rel in sorted(copies):
