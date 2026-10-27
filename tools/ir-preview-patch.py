@@ -47,8 +47,8 @@ VERSIONS = {
 }
 # a version whose panel.swf is not on disk is read from its archive (read only, never executed)
 SRC_ZIPS = {
-    "1.3.0": r"D:\Claude output\9. quarantine\InventoryReforged-1.3.0\InventoryReforged 1.3.0 195826.zip",
-    "1.4.0": r"D:\Claude output\9. quarantine\InventoryReforged-1.4.0\InventoryReforged 1.4.0 195826.zip",
+    "1.3.0": r"D:\Claude output\.MD\backups\quarantine\InventoryReforged-1.3.0\InventoryReforged 1.3.0 195826.zip",
+    "1.4.0": r"D:\Claude output\.MD\backups\quarantine\InventoryReforged-1.4.0\InventoryReforged 1.4.0 195826.zip",
 }
 SRC_DEFAULTS = {
     "1.2.4": os.environ.get("NORDEN_IR_PANEL_124", r"D:\Modlists\Njordlinger\mods\Inventory Reforged for SkyUI\Interface\InventoryReforged\panel.swf"),
