@@ -23,11 +23,10 @@ run time - that archive is not redistributed.
 
 ## RaceMenu Atelier (the optional "RaceMenu Atelier" installer option, 1.0.4+)
 
-The option installs a modified build of **RaceMenu Atelier** by **emberchain**
-([Nexus 193865](https://www.nexusmods.com/skyrimspecialedition/mods/193865),
-[github.com/emberchain/RaceMenuAtelier](https://github.com/emberchain/RaceMenuAtelier)), licensed under the **GNU
-General Public License version 3** - the same licence text as `LICENSE` in this download. It is shipped with
-emberchain's permission, and emberchain is its author; nothing of RaceMenu (expired6978) is included.
+The option installs a modified build of **RaceMenu Atelier** by **emberchain** (also known as RustyOldSword),
+licensed under the **GNU General Public License version 3** - the same licence text as `LICENSE` in this download.
+Copyright in RaceMenu Atelier is held by its author, emberchain; the changes listed below are by ApocryphaRealm, 2026,
+under the same licence. It is shipped under that licence. Nothing of RaceMenu (expired6978) is included.
 
 - **Files:** `SKSE\Plugins\RaceMenuAtelier.dll` and `.pdb` (object code), `SKSE\Plugins\RaceMenuAtelier\theme.ini`
   (the Norden UI - Black palette and the log level), `docs\RaceMenu Atelier - Norden UI - Black build.txt` (this
@@ -37,10 +36,9 @@ emberchain's permission, and emberchain is its author; nothing of RaceMenu (expi
   traits - get their own tiles and are picked through the menu's `onItemPress`, never `ChangeRace`) and `370269a`
   (palette and corner radius read from `SKSE\Plugins\RaceMenuAtelier\theme.ini` when it exists) and `62b288c` (the
   log level, `uLogLevel`, read from that same file). The first two are the changes emberchain lists for RaceMenu
-  Atelier 1.0.2; they were offered upstream as emberchain/RaceMenuAtelier pull request #1.
-- **Corresponding source:**
-  RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit 62b288c74f9fa26ae05dcf9dd41b8df084e9990a
-  (branch `upstream-apprentice`, upstream history kept). Build: `git submodule update --init --recursive`,
+  Atelier 1.0.2; they were offered to its author as a pull request.
+- **Corresponding source:** the public GitHub repository ApocryphaRealm/RaceMenuAtelierPatch, commit
+  62b288c74f9fa26ae05dcf9dd41b8df084e9990a (branch `upstream-apprentice`, upstream history kept). Build: `git submodule update --init --recursive`,
   `xmake f -m releasedbg --skyrim_vr=n --cxflags=/d1trimfile:<clone folder>`, `xmake build RaceMenuAtelier`.
 - **SHA-256:** DLL `585c1707475bb7f4ca507ef1fb0cfbdeae6946fb1ebd6c4b968c4ac22d2fb8d0`, PDB
   `15c2519732dd57181e43c3a99d0e54c3d6ef17f52de237ad7fd2b40fb481c8cc`.
@@ -57,7 +55,7 @@ includes no art (SWF) and no code (DLL) of Inventory Reforged. The "item preview
 (1.1.0) installs `Interface\InventoryReforged\panel.swf` of Inventory Reforged 1.4.0 with TWO scripts changed
 (DoAction_21 and 22: where and how large the 3D item is aimed, and an Item preview section of the settings popup, the Character button staying at the bottom, and the item card no longer following the window), made by `tools/ir-preview-patch.py` from the
 original file (SHA-256 in `extras/inventory-reforged/panel-1.2.4.sha256` and `panel-1.3.0.sha256`) - changed and included under the permission
-quoted above; the file is not in this repository. No DLL of Inventory Reforged is ever included.
+quoted above; the file is not in this repository. A second "panel fixes" choice (1.1.1) installs `Interface\InventoryReforged\panel.swf` of Inventory Reforged 1.6.3 with three scripts changed (DoAction_24, 25 and 30: black, opaque fills only), made by the same tool from the original file (SHA-256 in `extras/inventory-reforged/panel-1.6.3.sha256`), under the same permission. No DLL of Inventory Reforged is ever included.
 
 ## This repository
 

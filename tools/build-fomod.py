@@ -260,8 +260,8 @@ ET.SubElement(_ap, "description").text = (
     "and 1.0.1 cannot read a theme, so this option also REPLACES Atelier's RaceMenuAtelier.dll with a build that reads "
     "one: Atelier 1.0.1 with the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's classes and traits as "
     "their own tiles, and the optional theme.ini) and a log level read from that theme file, RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit "
-    + ATELIER_COMMIT[:7] + " (GPL-3.0). Give Norden UI - Black a higher priority than RaceMenu Atelier (in MO2's left "
-    "pane, below it) so this DLL wins. Atelier is emberchain's work; used with permission. Delete "
+    + ATELIER_COMMIT[:7] + ". Give Norden UI - Black a higher priority than RaceMenu Atelier (in MO2's left "
+    "pane, below it) so this DLL wins. Atelier is emberchain's work, under GPL-3.0. Delete "
     r"SKSE\Plugins\RaceMenuAtelier\theme.ini to get Atelier's own colours back.")
 _afs = ET.SubElement(_ap, "files")
 # The option is ONE top-level folder holding the install tree as it lands in the mod folder (SKSE\Plugins\..., docs\...),
@@ -280,7 +280,8 @@ ET.SubElement(_apat, "type", {"name": "Recommended"})
 ATELIER_NOTE = f"""RaceMenu Atelier - the build installed by Norden UI - Black
 
 SKSE\\Plugins\\RaceMenuAtelier.dll (and its .pdb) installed by Norden UI - Black's "RaceMenu Atelier" option is
-RaceMenu Atelier by emberchain (https://github.com/emberchain/RaceMenuAtelier), licensed GPL-3.0, modified.
+RaceMenu Atelier by emberchain (also known as RustyOldSword), who holds its copyright, licensed GPL-3.0, modified by
+ApocryphaRealm, 2026, under the same licence.
 
 RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]}
   = RaceMenu Atelier 1.0.1 (emberchain, f05e2c2)
@@ -288,8 +289,10 @@ RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COM
              onItemPress (never ChangeRace)
   + 370269a  optional SKSE\\Plugins\\RaceMenuAtelier\\theme.ini: palette and corner radius
   + 62b288c  uLogLevel in that theme.ini sets the log's verbosity (2 = info, the shipped value)
-The first two are the changes emberchain lists for RaceMenu Atelier 1.0.2 (offered upstream as
-emberchain/RaceMenuAtelier pull request #1); the third only adds the log level. Build: git submodule update --init --recursive; xmake f -m releasedbg --skyrim_vr=n
+The first two are the changes emberchain lists for RaceMenu Atelier 1.0.2 (offered to its author as a pull
+request); the third only adds the log level.
+Corresponding source: the public GitHub repository ApocryphaRealm/RaceMenuAtelierPatch, commit {ATELIER_COMMIT}.
+Build: git submodule update --init --recursive; xmake f -m releasedbg --skyrim_vr=n
 --cxflags=/d1trimfile:<clone folder>; xmake build RaceMenuAtelier.
 SHA-256 RaceMenuAtelier.dll {ATELIER_DLL_SHA256}
 SHA-256 RaceMenuAtelier.pdb {ATELIER_PDB_SHA256}
@@ -408,6 +411,33 @@ for _v, (_f, _folder) in IR_PANELS.items():
         "at 1.5 and offsets 0 (or the 'item preview size' option). Give Norden UI - Black a higher priority than Inventory Reforged.")
     ET.SubElement(ET.SubElement(_irl, "files"), "folder", {"source": _folder, "destination": "", "priority": "0"})
     ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
+# Inventory Reforged 1.6.3 (2026-11-04): COLOURS ONLY. Its settings popup and item window were rewritten, so the item
+# preview, Norden's item card and the Fixed place of the 1.4.0 option do not carry over (tools/ir-preview-patch.py).
+IR_163_FOLDER = "Inventory Reforged panel 1.6.3"
+IR_163_NAME = "Inventory Reforged 1.6.3 - panel fixes: Norden Black colours"
+IR_163_DESC = ("Only for Inventory Reforged for SkyUI 1.6.3 (Nexus 195826). The panel's sheets (the cog popup, the Character drawer, "
+               "the right-click menu, tooltips), its slot frames, buttons, tabs and tick boxes are black and opaque, like Norden UI - "
+               "Black's item list, instead of Inventory Reforged's dark greys and see-through blacks. Nothing else changes: the "
+               "item preview, item card and Fixed place of the 1.4.0 choice are not in this one. Inventory Reforged's page allows "
+               "changing any part of the mod; credit: Inventory Reforged for SkyUI. The file belongs to version 1.6.3: untick this "
+               "option (or delete the file) after updating Inventory Reforged. Give Norden UI - Black a higher priority than "
+               "Inventory Reforged.")
+IR_163_NOTE = ("Interface\\InventoryReforged\\panel.swf installed by Norden UI - Black's \"panel fixes\" option is\n"
+               "panel.swf of Inventory Reforged for SkyUI 1.6.3 (Nexus 195826) with THREE scripts changed (DoAction_24, 25, 30), colours only:\n"
+               "the panel sheets, the slot frames, the buttons, the tabs and strips and the settings popup's tick boxes are filled black, opaque.\n"
+               "panelBox, drawFrame, fillSheet, drawTab, placePieces, drawPiecesControl, drawJunkAskButton and drawAction are redefined in\n"
+               "DoAction_25 with the new fill; drawLookButton, drawLookArrow, drawLookReset, drawLookTab and drawLookCheck are changed in\n"
+               "DoAction_25, drawHeroTab in DoAction_24 and drawCompanionTab in DoAction_30. Lines, accents and text are unchanged.\n"
+               "Inventory Reforged's page allows changing and including any part of the mod without asking; credit: Inventory Reforged\n"
+               "for SkyUI. Tool: tools/ir-preview-patch.py in the Norden UI - Black repository. Delete this file (or untick the option)\n"
+               "after updating Inventory Reforged.\n")
+_ir163 = os.path.join(BUILD, "ir-panel", "1.6.3", "Interface", "InventoryReforged", "panel.swf")
+if not os.path.isfile(_ir163):
+    fail(f"patched Inventory Reforged 1.6.3 panel.swf missing: {_ir163} - run tools/ir-preview-patch.py --version 1.6.3 first")
+_irl = ET.SubElement(_irgp, "plugin", {"name": IR_163_NAME})
+ET.SubElement(_irl, "description").text = IR_163_DESC
+ET.SubElement(ET.SubElement(_irl, "files"), "folder", {"source": IR_163_FOLDER, "destination": "", "priority": "0"})
+ET.SubElement(ET.SubElement(_irl, "typeDescriptor"), "type", {"name": "Optional"})
 IR_NOTE = """Inventory Reforged for SkyUI - what Norden UI - Black's option installs
 
 SKSE\\Plugins\\InventoryReforged.ini is a settings file of Inventory Reforged for SkyUI (any version)
@@ -608,6 +638,11 @@ for _v, (_f, _folder) in IR_PANELS.items():
         "Inventory Reforged's page allows changing and including any part of the mod without asking; credit: Inventory Reforged\n"
         "for SkyUI. Tool: tools/ir-preview-patch.py in the Norden UI - Black repository. Delete this file (or untick the option)\n"
         "after updating Inventory Reforged.\n")
+_d = os.path.join(OUT, IR_163_FOLDER, "Interface", "InventoryReforged")
+os.makedirs(_d)
+shutil.copy2(_ir163, os.path.join(_d, "panel.swf"))
+os.makedirs(os.path.join(OUT, IR_163_FOLDER, "docs"))
+open(os.path.join(OUT, IR_163_FOLDER, "docs", "Inventory Reforged 1.6.3 panel.swf - Norden UI - Black.txt"), "w", encoding="utf-8", newline="\r\n").write(IR_163_NOTE)
 shutil.copytree(os.path.join(SRC, "Images"), os.path.join(OUT, "Images"))
 # LICENSE and NOTICE come from the repo (they used to be copied from the previous release - library 7050's seeding
 # trap: a notice changed in the repo would never have reached the package)
@@ -660,6 +695,7 @@ so it is black under Norden UI - Black. The option is a settings file holding on
 (SKSE\\Plugins\\InventoryReforged.ini; every other setting keeps the mod's own default) - no art or code of Inventory Reforged. Its menu settings still win. A second,
 unticked choice, "item preview size", installs Norden UI's 'SkyUI Default' 3D item position for players whose 3D item in
 Inventory Reforged's item window is small. A third, unticked choice (Inventory Reforged 1.4.0), "panel fixes", replaces its panel.swf with a copy where three scripts changed: the item preview, the Character button staying at the bottom, Norden's own item card left alone, and the panel's sheets, slot frames, buttons and tabs filled black (allowed by that mod's page).
+For Inventory Reforged 1.6.3 the "panel fixes" choice is the panel's black fills only; the item preview, item card and Fixed place belong to the 1.4.0 choice.
 Give Norden UI - Black a higher priority than Inventory Reforged.
 
 World Map Selector for Controller (optional, 1.1.0, recommended when its DLL is installed): its list of world maps beside
@@ -669,7 +705,7 @@ no file of the mod is replaced. Delete it, or untick the option, for the menu fr
 
 Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI. For the World Map Selector for Controller option: World Map Selector for Controller 1.0.0 or later.
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.
-RaceMenu Atelier is emberchain's (GPL-3.0), modified and shipped with emberchain's permission.
+RaceMenu Atelier is emberchain's (GPL-3.0), modified and shipped under that licence; its corresponding source is the GitHub repository ApocryphaRealm/RaceMenuAtelierPatch, commit {ATELIER_COMMIT[:7]}.
 Inventory Reforged for SkyUI is its author's work (Nexus 195826); its settings file is reused with the permission its page gives.
 """
 open(os.path.join(OUT, "README.txt"), "w", encoding="utf-8").write(readme)

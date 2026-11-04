@@ -44,16 +44,22 @@ VERSIONS = {
     "1.2.4": {"window": "DoAction_18", "hero": "DoAction_21", "look": "DoAction_22"},
     "1.3.0": {"window": "DoAction_18", "hero": "DoAction_21", "look": "DoAction_22"},
     "1.4.0": {"window": "DoAction_19", "hero": "DoAction_22", "look": "DoAction_23", "colours": True},
+    # 1.6.3 (2026-11-04): COLOURS ONLY. Its settings popup and item window were rewritten: 7 of the popup's 11 edit targets
+    # and 3 of the card function targets are gone, and PlacePreview takes other arguments, so the preview, the card and the
+    # Fixed place cannot be carried by this table; they would be a new port, proven in game.
+    "1.6.3": {"window": "DoAction_19", "hero": "DoAction_24", "look": "DoAction_25", "colours": True, "colours_only": True},
 }
 # a version whose panel.swf is not on disk is read from its archive (read only, never executed)
 SRC_ZIPS = {
     "1.3.0": r"D:\Claude output\.MD\backups\quarantine\InventoryReforged-1.3.0\InventoryReforged 1.3.0 195826.zip",
     "1.4.0": r"D:\Claude output\.MD\backups\quarantine\InventoryReforged-1.4.0\InventoryReforged 1.4.0 195826.zip",
+    "1.6.3": r"D:\Claude output\.MD\backups\quarantine\InventoryReforged-1.6.3\InventoryReforged 1.6.3 195826.zip",
 }
 SRC_DEFAULTS = {
     "1.2.4": os.environ.get("NORDEN_IR_PANEL_124", r"D:\Modlists\Njordlinger\mods\Inventory Reforged for SkyUI\Interface\InventoryReforged\panel.swf"),
     "1.3.0": os.environ.get("NORDEN_IR_PANEL_130", ""),
     "1.4.0": os.environ.get("NORDEN_IR_PANEL_140", ""),
+    "1.6.3": os.environ.get("NORDEN_IR_PANEL_163", ""),
 }
 
 NEW_FUNCTIONS = '''
@@ -395,6 +401,19 @@ COLOUR_EDITS = [
     ("drawLookArrow", "look.beginFill(lit ? Equipment.GOLD : 0,lit ? 22 : 40);", "look.beginFill(lit ? Equipment.GOLD : 0,lit ? 22 : 100);"),
 ]
 
+# Inventory Reforged 1.6.3: drawSheet no longer fills; fillSheet does, with a three-stop gradient of its own, and the
+# popup's tabs and tick boxes gained fills of the same see-through black.
+COLOUR_EDITS_163 = [e for e in COLOUR_EDITS if e[0] != "drawSheet"] + [
+    ("fillSheet", 'sheet.beginGradientFill("linear",Equipment.SHEET_INKS,[alpha,alpha,alpha],[0,120,255],turn);',
+     "sheet.beginFill(0,100);"),
+    ("drawLookTab", "tab.look.beginFill(0,shown ? 70 : (tab.lit ? 62 : 35));", "tab.look.beginFill(0,100);"),
+    ("drawLookCheck", "look.beginFill(0,45);", "look.beginFill(0,100);"),
+]
+
+
+def colour_edits(cfg):
+    return COLOUR_EDITS_163 if cfg.get("colours_only") else COLOUR_EDITS
+
 
 def script_order(name):
     return 1 if name == "DoAction" else int(name.split("_")[1])
@@ -404,7 +423,7 @@ def colour_pass(texts, cfg):
     """texts: script name -> decompiled text. Returns (text appended to the popup's script, {script: [(old, new)]})."""
     look_at = script_order(cfg["look"])
     tail, in_place = "", {}
-    for fn, old, new in COLOUR_EDITS:
+    for fn, old, new in colour_edits(cfg):
         head = "Equipment." + fn + " = function("
         homes = [n for n, t in texts.items() if head in t]
         if len(homes) != 1 or texts[homes[0]].count(head) != 1:
@@ -456,7 +475,7 @@ def ff(*a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--version", default="all", help="1.2.4, 1.3.0 or all")
+    ap.add_argument("--version", default="all", help="1.2.4, 1.3.0, 1.4.0, 1.6.3 (colours only) or all")
     ap.add_argument("--src", default=None, help="panel.swf of the chosen version (not with 'all')")
     ap.add_argument("--out", default=os.path.join(HERE, "build", "ir-panel"))
     a = ap.parse_args()
@@ -498,8 +517,9 @@ def patch_one(version, src, outdir):
         # the colour pass is written against 1.4.0's code (the one shipped); 1.2.4 and 1.3.0 build without it
         colour_tail, colour_in_place = colour_pass(texts, cfg) if cfg.get("colours") else ("", {})
         changed = [cfg["hero"], cfg["look"]] + sorted(n for n in colour_in_place if n not in (cfg["hero"], cfg["look"]))
-        jobs = [(cfg["look"], colour_in_place.get(cfg["look"], []) + EDITS_22, NEW_FUNCTIONS),
-                (cfg["hero"], colour_in_place.get(cfg["hero"], []) + EDITS_21, "")]
+        only = cfg.get("colours_only", False)
+        jobs = [(cfg["look"], colour_in_place.get(cfg["look"], []) + ([] if only else EDITS_22), "" if only else NEW_FUNCTIONS),
+                (cfg["hero"], colour_in_place.get(cfg["hero"], []) + ([] if only else EDITS_21), "")]
         jobs += [(n, colour_in_place[n], "") for n in changed[2:]]
         for name, edits, tail in jobs:
             text = texts[name]
@@ -508,10 +528,13 @@ def patch_one(version, src, outdir):
                     sys.exit(f"FAIL an edit target in {name} is not there exactly once: {old[:70]!r}")
                 text = text.replace(old, new)
             if name == cfg["look"]:
-                if four:
-                    assert tail.count(AIM_FOUR[0]) == 1
-                    tail = tail.replace(AIM_FOUR[0], AIM_FOUR[1])
-                tail = tail + card_functions(window_text) + (FRAME_FUNCTIONS if four else "") + colour_tail
+                if only:
+                    tail = colour_tail
+                else:
+                    if four:
+                        assert tail.count(AIM_FOUR[0]) == 1
+                        tail = tail.replace(AIM_FOUR[0], AIM_FOUR[1])
+                    tail = tail + card_functions(window_text) + (FRAME_FUNCTIONS if four else "") + colour_tail
             text = text.rstrip("\n") + "\n" + tail
             open(os.path.join(imp, name + ".as"), "w", encoding="utf-8", newline="\n").write(text)
         out_swf = os.path.join(tmp, "panel_patched.swf")
@@ -529,19 +552,19 @@ def patch_one(version, src, outdir):
         if sorted(diffs) != sorted(n + ".as" for n in changed):
             sys.exit(f"FAIL scripts that differ: {diffs} (only {changed} may)")
         got = open(os.path.join(tmp, "as_b", "scripts", "frame_1", cfg["look"] + ".as"), encoding="utf-8").read()
-        for needle in ("Equipment.aimPreview = function()", "Equipment.previewTune = function()",
-                       'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
+        for needle in () if only else ("Equipment.aimPreview = function()", "Equipment.previewTune = function()",
+                                       'Equipment.say("Item preview")', "Equipment.PREVIEW_FIT_LONG = 0.95", "Equipment.makeLook();"):
             if needle not in got:
                 sys.exit(f"FAIL the patched script lacks: {needle}")
-        for name, needle in ((cfg["hero"], "tab._y = 0;"), (cfg["look"], "Equipment.placeFixed = function()"), (cfg["look"], "Equipment.CARD_ROOM"),
-                             (cfg["look"], "Equipment.keepFrameHidden = function()"), (cfg["look"], "return text;")):
+        for name, needle in () if only else ((cfg["hero"], "tab._y = 0;"), (cfg["look"], "Equipment.placeFixed = function()"), (cfg["look"], "Equipment.CARD_ROOM"),
+                                             (cfg["look"], "Equipment.keepFrameHidden = function()"), (cfg["look"], "return text;")):
             if needle not in open(os.path.join(tmp, "as_b", "scripts", "frame_1", name + ".as"), encoding="utf-8").read():
                 sys.exit(f"FAIL {name} lacks: {needle}")
         # read the colour effect back out of the rebuilt file: the LAST definition of each function (the one that wins)
         # carries the new fill and not the old one
         rebuilt = {n: open(os.path.join(tmp, "as_b", "scripts", "frame_1", n + ".as"), encoding="utf-8").read().replace("\r\n", "\n")
                    for n in texts}
-        for fn, old, new in (COLOUR_EDITS if cfg.get("colours") else []):
+        for fn, old, new in (colour_edits(cfg) if cfg.get("colours") else []):
             head = "Equipment." + fn + " = function("
             last = max((n for n in rebuilt if head in rebuilt[n]), key=script_order)
             body = rebuilt[last][rebuilt[last].rindex(head):]

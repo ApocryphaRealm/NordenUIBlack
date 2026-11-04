@@ -15,6 +15,13 @@
   too, and installs at priority 1, so it still wins over the layout's file when ticked.
 
 
+### Changed
+- **No link to RaceMenu Atelier or its author's accounts in the package or repository text** (the owner, 2026-11-04). The installer option and its DLL stay. NOTICE.md, the installed docs note, README.txt and the installer text name the work and its author in plain words, state the GPL-3.0 licence and name the corresponding source in plain text: ApocryphaRealm/RaceMenuAtelierPatch, commit 62b288c. The DLL is unchanged.
+
+### Fixed
+- **A panel fixes choice for Inventory Reforged 1.6.3, colours only** (Inventory Reforged moved from 1.4.0 to 1.6.3 on 2026-11-04, and the 1.4.0 panel would run on the new DLL). tools/ir-preview-patch.py --version 1.6.3 fills the panel's sheets, slot frames, buttons, tabs and tick boxes black and opaque on 1.6.3's own panel.swf. Its popup and item window were rewritten, so the item preview, Norden's item card and the Fixed place stay with the 1.4.0 choice. Not yet seen in game.
+- **The notices no longer say the Atelier DLL is shipped with its author's permission.** The record holds an OK for a separate patch and for a theme file option, not for this DLL in this package, and no reply to the later fork request; the build ships under GPL-3.0, which needs no such permission (4. plans, racemenu-atelier-licence VERDICT.md). The 1.0.4 entry below keeps its wording as history.
+
 ## 1.1.0 - 2026-10-22 - working
 
 ### Added (World Map Selector for Controller, 2026-10-23)

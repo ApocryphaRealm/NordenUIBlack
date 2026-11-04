@@ -32,8 +32,7 @@ mod, so its level-up screen is built offline with `xdelta` and shipped finished.
 
 ## The RaceMenu Atelier option (1.0.4+)
 
-For players of [RaceMenu Atelier](https://www.nexusmods.com/skyrimspecialedition/mods/193865) by **emberchain** (GPL-3.0,
-[source](https://github.com/emberchain/RaceMenuAtelier)): the installer's last page offers **RaceMenu Atelier**, which
+For players of RaceMenu Atelier by **emberchain** (GPL-3.0): the installer's last page offers **RaceMenu Atelier**, which
 dresses Atelier's screen in Norden UI - Black's palette. Atelier 1.0.0 and 1.0.1 cannot read a theme, so the option
 installs two things:
 
@@ -41,14 +40,14 @@ installs two things:
   `..\RaceMenuAtelierNordenBlack\themes\norden-black.ini`;
 - `SKSE\Plugins\RaceMenuAtelier.dll` + `.pdb`, **replacing Atelier's DLL** with a build that reads the theme: Atelier
   1.0.1 plus our three commits (`09df305` Apprentice classes and traits as their own tiles, `370269a` the theme file,
-  `62b288c` the log level read from it) - the first two are the changes emberchain lists for Atelier 1.0.2 - (RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit 62b288c).
+  `62b288c` the log level read from it) - the first two are the changes emberchain lists for Atelier 1.0.2 - (RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit 62b288c; source: ApocryphaRealm/RaceMenuAtelierPatch).
   `build-fomod.py` takes it from `build\atelier\` (or `NORDEN_ATELIER_BUILD`) and refuses any file whose SHA-256 is not
   the recorded build's.
 
 It is Recommended when `SKSE\Plugins\RaceMenuAtelier.dll` is installed, otherwise optional and unticked. **Norden UI -
 Black must have a higher priority than RaceMenu Atelier** - in MO2's left pane, below it - so this DLL wins. Credit and
 the GPL notice: `NOTICE.md`; the package also installs `docs\RaceMenu Atelier - Norden UI - Black build.txt` beside the
-DLL. Thanks to emberchain for Atelier and for the permission.
+DLL.
 
 Version: `VERSION` (stamped by the version gate). Tools GPL-3.0-or-later (`LICENSE`); the art is
 Nithog's (`NOTICE.md`).
@@ -63,6 +62,9 @@ panel already follows the skin. No art or code of that mod is shipped. **Invento
 (optional, never preselected) installs Norden UI's own "SkyUI Default" 3D item position, because Inventory Reforged
 sizes its item window's 3D item from the game's 3D-item position at first open, and the layouts of Norden UI's installer
 set that position for Norden's own item card. Norden UI - Black must have a higher priority than Inventory Reforged.
+
+For Inventory Reforged 1.6.3 (1.1.1+) the panel fixes choice is the colours only: its settings popup and item window were
+rewritten, so the preview, card and Fixed place below do not carry over to it (`tools/ir-preview-patch.py --version 1.6.3`).
 
 A third choice, **Inventory Reforged - panel fixes** (Inventory Reforged 1.4.0) (optional), replaces that
 mod's `panel.swf` with a copy in which two scripts (DoAction_21, 22) changed (made by `tools/ir-preview-patch.py`; the file is
