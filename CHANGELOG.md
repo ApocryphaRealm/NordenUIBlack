@@ -19,6 +19,7 @@
 
 
 ### Fixed
+- The Inventory Reforged option now leaves Norden's own item card in place (bLeaveCard = 1): since Inventory Reforged 1.6.3 the card otherwise moved into its window and was lost.
 - **A panel fixes choice for Inventory Reforged 1.6.3, colours only** (Inventory Reforged moved from 1.4.0 to 1.6.3 on 2026-11-04, and the 1.4.0 panel would run on the new DLL). tools/ir-preview-patch.py --version 1.6.3 fills the panel's sheets, slot frames, buttons, tabs and tick boxes black and opaque on 1.6.3's own panel.swf. Its popup and item window were rewritten, so the item preview, Norden's item card and the Fixed place stay with the 1.4.0 choice. Not yet seen in game.
 
 ## 1.1.0 - 2026-10-22 - working
