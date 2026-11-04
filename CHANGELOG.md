@@ -1,6 +1,9 @@
 # Changelog - Norden UI - Black
 
-## 1.1.1 - 2026-10-23 - untested
+## 2.0.0 - 2026-11-04 - untested
+
+### Removed
+- **The optional installer choice for another mod's character-creation screen, with the DLL it carried, is gone for good** (the owner, 2026-11-04). Its folder, option, installer text and notices are out of the package, and no text names that mod any more. A player who ticked the choice loses its DLL and theme file on updating, which is why this is a major number. Every other file is unchanged.
 
 ### Fixed (3D item too large, a player report, 2026-10-23)
 - **Each inventory layout option now installs Norden UI's own SkyUI item card and 3D item settings with its movies**
@@ -15,12 +18,8 @@
   too, and installs at priority 1, so it still wins over the layout's file when ticked.
 
 
-### Changed
-- **No link to RaceMenu Atelier or its author's accounts in the package or repository text** (the owner, 2026-11-04). The installer option and its DLL stay. NOTICE.md, the installed docs note, README.txt and the installer text name the work and its author in plain words, state the GPL-3.0 licence and name the corresponding source in plain text: ApocryphaRealm/RaceMenuAtelierPatch, commit 62b288c. The DLL is unchanged.
-
 ### Fixed
 - **A panel fixes choice for Inventory Reforged 1.6.3, colours only** (Inventory Reforged moved from 1.4.0 to 1.6.3 on 2026-11-04, and the 1.4.0 panel would run on the new DLL). tools/ir-preview-patch.py --version 1.6.3 fills the panel's sheets, slot frames, buttons, tabs and tick boxes black and opaque on 1.6.3's own panel.swf. Its popup and item window were rewritten, so the item preview, Norden's item card and the Fixed place stay with the 1.4.0 choice. Not yet seen in game.
-- **The notices no longer say the Atelier DLL is shipped with its author's permission.** The record holds an OK for a separate patch and for a theme file option, not for this DLL in this package, and no reply to the later fork request; the build ships under GPL-3.0, which needs no such permission (4. plans, racemenu-atelier-licence VERDICT.md). The 1.0.4 entry below keeps its wording as history.
 
 ## 1.1.0 - 2026-10-22 - working
 
@@ -205,17 +204,8 @@
 ## 1.0.4 - 2026-10-07 - untested
 
 ### Added
-- **RaceMenu Atelier** - a new option on the installer's last page (the owner, 2026-10-07): RaceMenu Atelier (by
-  emberchain) in Norden UI - Black's palette - black panels, Norden's silver #BBBDBF lines and accents, #8E9396 borders,
-  square corners. Installs `SKSE\Plugins\RaceMenuAtelier\theme.ini` and, because Atelier 1.0.0 / 1.0.1 cannot read a
-  theme, replaces `SKSE\Plugins\RaceMenuAtelier.dll` (+ `.pdb`) with a build that reads one: Atelier 1.0.1 plus
-  `09df305` (Apprentice - A Class Overhaul's classes and traits as their own tiles), `370269a` (the optional theme
-  file) - the two changes emberchain lists for Atelier 1.0.2 - and `62b288c` (the log level, `uLogLevel = 2`, read
-  from that theme file) (RaceMenu Atelier by emberchain, GPL-3.0, patched build from commit
-  `62b288c`; with emberchain's permission; NOTICE.md and an installed `docs\RaceMenu Atelier - Norden UI -
-  Black build.txt` carry the notice and the source pointer). Recommended when RaceMenuAtelier.dll is installed,
-  otherwise optional and unticked. Norden UI - Black must have a higher priority than RaceMenu Atelier (in MO2's left
-  pane, below it). Nothing else in the package changed: every other file is byte-identical to 1.0.3.
+- A new optional choice on the installer's last page for another mod's character-creation screen, with a DLL of that
+  mod (removed for good in 2.0.0). Nothing else in the package changed: every other file is byte-identical to 1.0.3.
 
 ### Fixed
 - **The dialogue box is black now** (a player's report, 2026-10-08: the conversation box still showed Norden's colour).

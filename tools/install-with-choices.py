@@ -17,7 +17,7 @@ FOMOD installer does.
 
     python install-with-choices.py <FOMOD folder> <target mod folder> [--dry-run] [--also "<option name>"]
 
---also takes an option the installed files cannot vouch for (RaceMenu Atelier, in a build under test), by its name.
+--also takes an option the installed files cannot vouch for (a build under test), by its name.
 """
 import hashlib, os, shutil, sys, configparser
 import xml.etree.ElementTree as ET

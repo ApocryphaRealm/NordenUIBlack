@@ -26,10 +26,6 @@ of this mod carrying the RaceMenu DIP files and the CPC screen), OUT_ROOT (defau
 Build switches:
   NORDEN_INCLUDE_HPM=1      also add the HUD Position Manager widgets option (default OFF - HPM is not released yet and
                             its page waits; 1.0.4 ships without it, the owner 2026-10-07).
-  NORDEN_ATELIER_BUILD      folder holding the theme-capable RaceMenuAtelier.dll + .pdb (default build\atelier); both
-                            must match the SHA-256 pinned below (ATELIER_*), so only the recorded build can ship.
-  NORDEN_ATELIER_THEME      the Norden Black theme.ini (default ..\RaceMenuAtelierNordenBlack\themes\norden-black.ini,
-                            the one copy of that file).
 """
 import os, re, sys, json, shutil, hashlib, xml.etree.ElementTree as ET
 
@@ -78,21 +74,6 @@ else:
         sys.exit(1)
 INCLUDE_HPM = os.environ.get("NORDEN_INCLUDE_HPM", "0") == "1"
 
-# RaceMenu Atelier option (1.0.4, the owner 2026-10-07). The DLL is RaceMenu Atelier (emberchain, GPL-3.0) built from
-# a patched build (branch upstream-apprentice) at commit
-# ATELIER_COMMIT: Atelier 1.0.1 (f05e2c2) plus 09df305 (Apprentice's classes and traits as their own tiles), 370269a
-# (optional theme.ini) and 62b288c (uLogLevel read from that theme.ini, so the shipped INI carries the log level) - the first two changes
-# emberchain listed for Atelier 1.0.2, whose own build cannot be downloaded (Nexus page removed). Built with
-#   xmake f -m releasedbg --skyrim_vr=n --cxflags=/d1trimfile:<clone dir>  &&  xmake build RaceMenuAtelier
-# from a clone at a path with no spaces, inside the shared build environment (MODS_BUILD_ENV); 0 build paths and 0 user
-# folders in the DLL and the PDB, PDB recorded by bare name, pairing proven. Rebuilt 2026-10-19 from a clean build tree
-# (the 2026-10-07 build's PDB carried the user folder; link.exe keeps an old PDB's records).
-ATELIER_COMMIT = "62b288c74f9fa26ae05dcf9dd41b8df084e9990a"
-ATELIER_DLL_SHA256 = "585c1707475bb7f4ca507ef1fb0cfbdeae6946fb1ebd6c4b968c4ac22d2fb8d0"
-ATELIER_PDB_SHA256 = "15c2519732dd57181e43c3a99d0e54c3d6ef17f52de237ad7fd2b40fb481c8cc"
-ATELIER_BUILD = os.environ.get("NORDEN_ATELIER_BUILD", os.path.join(BUILD, "atelier"))
-ATELIER_THEME = os.environ.get("NORDEN_ATELIER_THEME", os.path.join(os.path.dirname(REPO), "RaceMenuAtelierNordenBlack",
-                                                                     "themes", "norden-black.ini"))
 EXTRAS_FROM = os.environ.get("NORDEN_EXTRAS_FROM", os.path.join(OUT_ROOT, "Norden UI - Black 1.0.2"))
 VERSION = open(os.path.join(REPO, "VERSION"), encoding="utf-8-sig").read().strip()
 OUT = os.path.join(OUT_ROOT, f"Norden UI - Black {VERSION} FOMOD")
@@ -239,69 +220,7 @@ extra("QuickLoot IE 4.0 BETA",
       "Norden file; otherwise leave it unticked.",
       [("file", r"Extras\QuickLoot IE 4.0 BETA\LootMenuIE.swf", r"Interface\LootMenuIE.swf")])
 
-# RaceMenu Atelier in Norden Black (the owner, 2026-10-07). Stock Atelier 1.0.0/1.0.1 cannot read a theme, so the
-# option ships the theme file AND the theme-capable Atelier DLL (see ATELIER_COMMIT). Recommended when Atelier's DLL is
-# installed; otherwise optional and unticked, as the HPM option does (a NotUsable default would lock out a player whose
-# installer cannot see a loose DLL, or who installs Atelier afterwards).
 _sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
-_adll = os.path.join(ATELIER_BUILD, "RaceMenuAtelier.dll")
-_apdb = os.path.join(ATELIER_BUILD, "RaceMenuAtelier.pdb")
-for _f, _want in ((_adll, ATELIER_DLL_SHA256), (_apdb, ATELIER_PDB_SHA256)):
-    if not os.path.isfile(_f):
-        fail(f"Atelier build missing: {_f} - build {ATELIER_COMMIT[:7]} of the fork (see ATELIER_COMMIT) and copy it there")
-    if _sha(_f) != _want:
-        fail(f"{_f} is not the recorded Atelier build ({ATELIER_COMMIT[:7]}): SHA-256 {_sha(_f)} != {_want}")
-if not os.path.isfile(ATELIER_THEME):
-    fail(f"Norden Black Atelier theme missing: {ATELIER_THEME}")
-_ap = ET.SubElement(plugins, "plugin", {"name": "RaceMenu Atelier"})
-ET.SubElement(_ap, "description").text = (
-    "Only if you use RaceMenu Atelier (by emberchain). Dresses Atelier's character-creation screen in Norden UI - "
-    "Black's palette: black panels, Norden's silver lines and square corners. Requires RaceMenu Atelier. Atelier 1.0.0 "
-    "and 1.0.1 cannot read a theme, so this option also REPLACES Atelier's RaceMenuAtelier.dll with a build that reads "
-    "one: Atelier 1.0.1 with the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's classes and traits as "
-    "their own tiles, and the optional theme.ini) and a log level read from that theme file, RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit "
-    + ATELIER_COMMIT[:7] + ". Give Norden UI - Black a higher priority than RaceMenu Atelier (in MO2's left "
-    "pane, below it) so this DLL wins. Atelier is emberchain's work, under GPL-3.0. Delete "
-    r"SKSE\Plugins\RaceMenuAtelier\theme.ini to get Atelier's own colours back.")
-_afs = ET.SubElement(_ap, "files")
-# The option is ONE top-level folder holding the install tree as it lands in the mod folder (SKSE\Plugins\..., docs\...),
-# installed with destination "". Why a top-level folder with no separator in its name: the package gate row
-# installed-build-is-the-package judges a FOMOD's installed DLL by flattening only such a folder
-# (the way Apocrypha Menu Framework's SMF-Name\ is flattened); a per-file mapping from Extras\RaceMenu Atelier\ to
-# SKSE\Plugins\ read as "never installed" although the install was right (2026-10-19). Installed result unchanged.
-ET.SubElement(_afs, "folder", {"source": "RaceMenu Atelier", "destination": "", "priority": "0"})
-_atd = ET.SubElement(_ap, "typeDescriptor")
-_adt = ET.SubElement(_atd, "dependencyType")
-ET.SubElement(_adt, "defaultType", {"name": "Optional"})
-_apat = ET.SubElement(ET.SubElement(_adt, "patterns"), "pattern")
-ET.SubElement(ET.SubElement(_apat, "dependencies", {"operator": "And"}), "fileDependency",
-              {"file": r"SKSE\Plugins\RaceMenuAtelier.dll", "state": "Active"})
-ET.SubElement(_apat, "type", {"name": "Recommended"})
-ATELIER_NOTE = f"""RaceMenu Atelier - the build installed by Norden UI - Black
-
-SKSE\\Plugins\\RaceMenuAtelier.dll (and its .pdb) installed by Norden UI - Black's "RaceMenu Atelier" option is
-RaceMenu Atelier by emberchain (also known as RustyOldSword), who holds its copyright, licensed GPL-3.0, modified by
-ApocryphaRealm, 2026, under the same licence.
-
-RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]}
-  = RaceMenu Atelier 1.0.1 (emberchain, f05e2c2)
-  + 09df305  Apprentice - A Class Overhaul's classes and traits get their own tiles and are picked through the menu's
-             onItemPress (never ChangeRace)
-  + 370269a  optional SKSE\\Plugins\\RaceMenuAtelier\\theme.ini: palette and corner radius
-  + 62b288c  uLogLevel in that theme.ini sets the log's verbosity (2 = info, the shipped value)
-The first two are the changes emberchain lists for RaceMenu Atelier 1.0.2 (offered to its author as a pull
-request); the third only adds the log level.
-Corresponding source: the public GitHub repository ApocryphaRealm/RaceMenuAtelierPatch, commit {ATELIER_COMMIT}.
-Build: git submodule update --init --recursive; xmake f -m releasedbg --skyrim_vr=n
---cxflags=/d1trimfile:<clone folder>; xmake build RaceMenuAtelier.
-SHA-256 RaceMenuAtelier.dll {ATELIER_DLL_SHA256}
-SHA-256 RaceMenuAtelier.pdb {ATELIER_PDB_SHA256}
-
-The licence is the GNU General Public License version 3 (LICENSE in the Norden UI - Black download,
-https://www.gnu.org/licenses/gpl-3.0.txt). theme.ini holds the Norden UI - Black palette and the log level.
-To go back to stock Atelier, untick the option (or delete these files) and let RaceMenu Atelier's own DLL win.
-"""
-
 # Inventory Reforged for SkyUI (1.1.0, the owner 2026-10-21: "adding support in Norden Black to have it recoloured").
 # Inventory Reforged (Nexus 195826) is open: its page lets anyone use, change, convert, reupload and include any part
 # of it in their own mods, free or not, without asking, credit welcome (read 2026-10-21 from its description). Even so
@@ -594,15 +513,6 @@ if INCLUDE_HPM:
     os.makedirs(os.path.join(OUT, "Extras", "HUD Position Manager", "widgets"))
     for _n in HPM_NAMES:
         shutil.copy2(os.path.join(HPM_WIDGETS, _n + ".swf"), os.path.join(OUT, "Extras", "HUD Position Manager", "widgets", _n + ".swf"))
-_ao = os.path.join(OUT, "RaceMenu Atelier", "SKSE", "Plugins")
-os.makedirs(os.path.join(_ao, "RaceMenuAtelier"))
-os.makedirs(os.path.join(OUT, "RaceMenu Atelier", "docs"))
-shutil.copy2(_adll, os.path.join(_ao, "RaceMenuAtelier.dll"))
-shutil.copy2(_apdb, os.path.join(_ao, "RaceMenuAtelier.pdb"))
-shutil.copy2(ATELIER_THEME, os.path.join(_ao, "RaceMenuAtelier", "theme.ini"))
-open(os.path.join(OUT, "RaceMenu Atelier", "docs", "RaceMenu Atelier - Norden UI - Black build.txt"), "w", encoding="utf-8", newline="\r\n").write(ATELIER_NOTE)
-if _sha(os.path.join(_ao, "RaceMenuAtelier.dll")) != ATELIER_DLL_SHA256:
-    fail("the packaged RaceMenuAtelier.dll does not match the recorded build")
 _iro = os.path.join(OUT, "Inventory Reforged")
 os.makedirs(os.path.join(_iro, "SKSE", "Plugins"))
 os.makedirs(os.path.join(_iro, "docs"))
@@ -677,17 +587,7 @@ Install: Norden UI first, then this, in a slot ABOVE Norden UI (higher priority)
 questions as Norden UI's - pick the same answers. Options with nothing to recolour install nothing and leave Norden's
 own files in place. The last page offers the menus that are not Norden's loose files: RaceMenu (through the Automatic
 DIP Patcher, like Norden's own RaceMenu download), Character Progression Control's level-up screen, Norden's
-QuickLoot IE 4.0 BETA file{HPM_README}, and RaceMenu Atelier.
-
-RaceMenu Atelier (optional): for players who use RaceMenu Atelier by emberchain. It dresses Atelier's screen in
-Norden UI - Black's palette (black panels, Norden's silver lines, square corners). Atelier 1.0.0 and 1.0.1 cannot read
-a theme, so the option installs SKSE\\Plugins\\RaceMenuAtelier\\theme.ini AND replaces Atelier's RaceMenuAtelier.dll
-with a build that reads it: Atelier 1.0.1 plus the two changes of Atelier 1.0.2 (Apprentice - A Class Overhaul's
-classes and traits as their own tiles; the optional theme.ini). It is recommended only when RaceMenuAtelier.dll is
-installed. Give Norden UI - Black a HIGHER priority than RaceMenu Atelier - in MO2's left pane, place it BELOW RaceMenu
-Atelier - so this DLL wins. Delete theme.ini for Atelier's own colours; untick the option to go back to stock Atelier.
-RaceMenu Atelier is GPL-3.0; the build is RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit {ATELIER_COMMIT[:7]} (see NOTICE.md and
-docs\\RaceMenu Atelier - Norden UI - Black build.txt).
+QuickLoot IE 4.0 BETA file{HPM_README}.
 
 Inventory Reforged (optional, 1.1.0): for players who use Inventory Reforged for SkyUI (Nexus 195826). Its gold accent and
 parchment text become Norden's silver (#BBBDBF) and soft white (#E5E5E5); the rest of its panel already follows the skin,
@@ -703,9 +603,8 @@ the world map takes Norden UI - Black's look - black panel, white text, the item
 slate edge lines. The option is a style file the mod reads (SKSE\\Plugins\\WorldMapSelectorForController_PanelStyle.ini);
 no file of the mod is replaced. Delete it, or untick the option, for the menu framework's theme.
 
-Requirements: Norden UI {NORDEN_VERSION}. For the RaceMenu Atelier option: RaceMenu Atelier (and RaceMenu). For the Inventory Reforged options: Inventory Reforged for SkyUI. For the World Map Selector for Controller option: World Map Selector for Controller 1.0.0 or later.
+Requirements: Norden UI {NORDEN_VERSION}. For the Inventory Reforged options: Inventory Reforged for SkyUI. For the World Map Selector for Controller option: World Map Selector for Controller 1.0.0 or later.
 Credit: all art is Nithog's Norden UI, recoloured with permission terms that allow a modified release on Nexus with credit.
-RaceMenu Atelier is emberchain's (GPL-3.0), modified and shipped under that licence; its corresponding source is the GitHub repository ApocryphaRealm/RaceMenuAtelierPatch, commit {ATELIER_COMMIT[:7]}.
 Inventory Reforged for SkyUI is its author's work (Nexus 195826); its settings file is reused with the permission its page gives.
 """
 open(os.path.join(OUT, "README.txt"), "w", encoding="utf-8").write(readme)

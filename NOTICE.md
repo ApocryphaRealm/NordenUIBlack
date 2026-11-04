@@ -21,28 +21,6 @@ download does. Where a menu's original lives inside another mod's archive (RaceM
 Control), the package ships the patched result only, exactly as Norden's own DIP patch produces it at
 run time - that archive is not redistributed.
 
-## RaceMenu Atelier (the optional "RaceMenu Atelier" installer option, 1.0.4+)
-
-The option installs a modified build of **RaceMenu Atelier** by **emberchain** (also known as RustyOldSword),
-licensed under the **GNU General Public License version 3** - the same licence text as `LICENSE` in this download.
-Copyright in RaceMenu Atelier is held by its author, emberchain; the changes listed below are by ApocryphaRealm, 2026,
-under the same licence. It is shipped under that licence. Nothing of RaceMenu (expired6978) is included.
-
-- **Files:** `SKSE\Plugins\RaceMenuAtelier.dll` and `.pdb` (object code), `SKSE\Plugins\RaceMenuAtelier\theme.ini`
-  (the Norden UI - Black palette and the log level), `docs\RaceMenu Atelier - Norden UI - Black build.txt` (this
-  notice, installed beside the DLL).
-- **What was changed:** RaceMenu Atelier 1.0.1 (emberchain, commit `f05e2c2`) plus three commits by ApocryphaRealm:
-  `09df305` (race-type entries another mod files under its own category - Apprentice - A Class Overhaul's classes and
-  traits - get their own tiles and are picked through the menu's `onItemPress`, never `ChangeRace`) and `370269a`
-  (palette and corner radius read from `SKSE\Plugins\RaceMenuAtelier\theme.ini` when it exists) and `62b288c` (the
-  log level, `uLogLevel`, read from that same file). The first two are the changes emberchain lists for RaceMenu
-  Atelier 1.0.2; they were offered to its author as a pull request.
-- **Corresponding source:** the public GitHub repository ApocryphaRealm/RaceMenuAtelierPatch, commit
-  62b288c74f9fa26ae05dcf9dd41b8df084e9990a (branch `upstream-apprentice`, upstream history kept). Build: `git submodule update --init --recursive`,
-  `xmake f -m releasedbg --skyrim_vr=n --cxflags=/d1trimfile:<clone folder>`, `xmake build RaceMenuAtelier`.
-- **SHA-256:** DLL `585c1707475bb7f4ca507ef1fb0cfbdeae6946fb1ebd6c4b968c4ac22d2fb8d0`, PDB
-  `15c2519732dd57181e43c3a99d0e54c3d6ef17f52de237ad7fd2b40fb481c8cc`.
-
 ## Inventory Reforged for SkyUI (the optional "Inventory Reforged" installer options, 1.1.0+)
 
 [Inventory Reforged for SkyUI](https://www.nexusmods.com/skyrimspecialedition/mods/195826) is its author's work. Its page

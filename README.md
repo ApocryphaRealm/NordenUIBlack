@@ -30,25 +30,6 @@ from the player's own `RaceMenu.bsa` - RaceMenu's files are never distributed. T
 offline only to prove they still fit and to read the colour back. Character Progression Control is our own
 mod, so its level-up screen is built offline with `xdelta` and shipped finished.
 
-## The RaceMenu Atelier option (1.0.4+)
-
-For players of RaceMenu Atelier by **emberchain** (GPL-3.0): the installer's last page offers **RaceMenu Atelier**, which
-dresses Atelier's screen in Norden UI - Black's palette. Atelier 1.0.0 and 1.0.1 cannot read a theme, so the option
-installs two things:
-
-- `SKSE\Plugins\RaceMenuAtelier\theme.ini` - colour values, corner radius and the log level (`uLogLevel = 2`, info), read from the one copy in
-  `..\RaceMenuAtelierNordenBlack\themes\norden-black.ini`;
-- `SKSE\Plugins\RaceMenuAtelier.dll` + `.pdb`, **replacing Atelier's DLL** with a build that reads the theme: Atelier
-  1.0.1 plus our three commits (`09df305` Apprentice classes and traits as their own tiles, `370269a` the theme file,
-  `62b288c` the log level read from it) - the first two are the changes emberchain lists for Atelier 1.0.2 - (RaceMenu Atelier by emberchain (GPL-3.0), patched build from commit 62b288c; source: ApocryphaRealm/RaceMenuAtelierPatch).
-  `build-fomod.py` takes it from `build\atelier\` (or `NORDEN_ATELIER_BUILD`) and refuses any file whose SHA-256 is not
-  the recorded build's.
-
-It is Recommended when `SKSE\Plugins\RaceMenuAtelier.dll` is installed, otherwise optional and unticked. **Norden UI -
-Black must have a higher priority than RaceMenu Atelier** - in MO2's left pane, below it - so this DLL wins. Credit and
-the GPL notice: `NOTICE.md`; the package also installs `docs\RaceMenu Atelier - Norden UI - Black build.txt` beside the
-DLL.
-
 Version: `VERSION` (stamped by the version gate). Tools GPL-3.0-or-later (`LICENSE`); the art is
 Nithog's (`NOTICE.md`).
 
